@@ -1,0 +1,8 @@
+services:
+  Drupal\typed_entity_example\TypedRepositories\ArticleRepository:
+    parent: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    tags:
+      -
+        name: typed_entity_repository
+        entity_type_id: node
+        bundle: article

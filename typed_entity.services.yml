@@ -1,0 +1,15 @@
+services:
+  Drupal\typed_entity\RepositoryCollector:
+    arguments: ['@entity_type.manager']
+    tags:
+      -
+        name: service_collector
+        tag: typed_entity_repository
+        call: addRepository
+  Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase:
+    arguments: ['@service_container']
+    tags:
+      -
+        name: typed_entity_repository
+        entity_type_id: node
+        bundle: article
