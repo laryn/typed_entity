@@ -1,4 +1,6 @@
 services:
+  Drupal\typed_entity\RepositoryManager:
+    arguments: ['@Drupal\typed_entity\RepositoryCollector']
   Drupal\typed_entity\RepositoryCollector:
     arguments: ['@entity_type.manager']
     tags:

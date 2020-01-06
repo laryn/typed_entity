@@ -2,16 +2,13 @@
 
 namespace Drupal\typed_entity;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
-use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
 
 /**
- * Collects the repositories and negotiates from a loaded entity.
+ * Collects the repositories.
  */
-final class RepositoryCollector implements EntityWrapperInterface {
+final class RepositoryCollector {
 
   /**
    * The collected repositories.
@@ -70,44 +67,16 @@ final class RepositoryCollector implements EntityWrapperInterface {
   }
 
   /**
-   * Gets the entity repository based on the entity information and the variant.
+   * Get a repository.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to extract info for.
+   * @param string $repository_id
+   *   The repository identifier.
    *
-   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface
-   *   The repository for the entity.
-   *
-   * @throws \Drupal\typed_entity\RepositoryNotFoundException
-   *   When the repository was not found.
-   *
-   * @todo: The variant negotiation is still missing.
+   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface|null
+   *   The repository.
    */
-  public function repositoryFromEntity(EntityInterface $entity): TypedEntityRepositoryInterface {
-    $identifier = implode(
-      TypedEntityRepositoryBase::SEPARATOR,
-      array_filter([$entity->getEntityTypeId(), $entity->bundle()])
-    );
-    $repository = $this->repositories[$identifier];
-    if (empty($repository)) {
-      $message = 'Repository with identifier "' . $identifier . '" not found';
-      throw new RepositoryNotFoundException($message);
-    }
-    return $repository;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function wrap(EntityInterface $entity): WrappedEntityInterface {
-    return $this->repositoryFromEntity($entity)->wrap($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function wrapMultiple(array $entities): array {
-    return array_map([$this, 'wrap'], $entities);
+  public function get(string $repository_id): ?TypedEntityRepositoryInterface {
+    return $this->repositories[$repository_id] ?? NULL;
   }
 
 }

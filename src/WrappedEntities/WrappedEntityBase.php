@@ -3,7 +3,7 @@
 namespace Drupal\typed_entity\WrappedEntities;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\typed_entity\RepositoryCollector;
+use Drupal\typed_entity\RepositoryManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -61,9 +61,9 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
     if (!$owner instanceof EntityInterface) {
       return NULL;
     }
-    $collector = \Drupal::service(RepositoryCollector::class);
-    assert($collector instanceof RepositoryCollector);
-    return $collector->wrap($owner);
+    $manager = \Drupal::service(RepositoryManager::class);
+    assert($manager instanceof RepositoryManager);
+    return $manager->wrap($owner);
   }
 
 }

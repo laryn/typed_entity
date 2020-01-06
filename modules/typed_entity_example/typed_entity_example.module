@@ -7,7 +7,7 @@
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\typed_entity\RepositoryCollector;
+use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity_example\TypedRepositories\ArticleRepository;
 use Drupal\typed_entity_example\WrappedEntities\Article;
 
@@ -18,9 +18,9 @@ function typed_entity_example_node_view_alter(array &$build, EntityInterface $en
   if ($entity->bundle() !== 'article') {
     return;
   }
-  $repository_collector = \Drupal::service(RepositoryCollector::class);
-  assert($repository_collector instanceof RepositoryCollector);
-  $repository = $repository_collector->repositoryFromEntity($entity);
+  $repository_manager = \Drupal::service(RepositoryManager::class);
+  assert($repository_manager instanceof RepositoryManager);
+  $repository = $repository_manager->repositoryFromEntity($entity);
   assert($repository instanceof ArticleRepository);
   $articles = $repository->findByTags(['Vegetarian', 'heaLthy', 'Baking']);
   $build['related'] = [
@@ -29,7 +29,7 @@ function typed_entity_example_node_view_alter(array &$build, EntityInterface $en
       return $article->label();
     }, $articles),
   ];
-  $author = $repository_collector->wrap($entity)
+  $author = $repository_manager->wrap($entity)
     ->owner()
     ->nickname();
   $build['owner'] = [
