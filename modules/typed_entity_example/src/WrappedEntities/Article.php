@@ -23,6 +23,8 @@ final class Article extends WrappedEntityBase {
   /**
    * Article constructor.
    *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to wrap.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */

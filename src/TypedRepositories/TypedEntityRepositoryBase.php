@@ -11,6 +11,9 @@ use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use UnexpectedValueException;
 
+/**
+ * Base class all repositories should extend from.
+ */
 class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
 
   /**
@@ -58,7 +61,7 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   /**
    * RepositoryCollector constructor.
    *
-   * @param  $container
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The service container.
    */
   public function __construct(ContainerInterface $container) {
@@ -177,6 +180,12 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   }
 
   /**
+   * Wraps multiple entities by entity ID.
+   *
+   * Note that even when the entities are all of the same type there is no
+   * guarantee that they are all of the same bundle. That means that different
+   * wrapped entity classes may be returned.
+   *
    * @param array $items
    *   The array containing the IDs of the entities to wrap.
    *

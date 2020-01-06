@@ -2,40 +2,14 @@
 
 namespace Drupal\typed_entity\TypedRepositories;
 
-use Drupal\Component\Assertion\Inspector;
-use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
-use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
+use Drupal\typed_entity\EntityWrapperInterface;
 
-interface TypedEntityRepositoryInterface {
-
-  /**
-   * Wraps an entity with business logic.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to wrap.
-   *
-   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface
-   *   The wrapped entity.
-   *
-   * @throws \Drupal\typed_entity\InvalidValueException
-   */
-  public function wrap(EntityInterface $entity): WrappedEntityInterface;
-
-  /**
-   * Wraps an entities with business logic.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface[] $entities
-   *   The entity to wrap.
-   *
-   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface[]
-   *   The wrapped entities.
-   *
-   * @throws \Drupal\typed_entity\InvalidValueException
-   */
-  public function wrapMultiple(array $entities): array;
+/**
+ * Entity repository.
+ */
+interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
 
   /**
    * Initialize the repository with the parameters in the service container.

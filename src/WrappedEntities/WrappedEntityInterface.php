@@ -3,7 +3,6 @@
 namespace Drupal\typed_entity\WrappedEntities;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\typed_entity\RepositoryCollector;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -42,6 +41,7 @@ interface WrappedEntityInterface {
    * Get the label of the entity.
    *
    * @return string
+   *   The entity label.
    */
   public function label(): string;
 
@@ -50,6 +50,8 @@ interface WrappedEntityInterface {
    *
    * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface|null
    *   The owner.
+   *
+   * @throws \Drupal\typed_entity\InvalidValueException
    */
   public function owner(): ?WrappedEntityInterface;
 

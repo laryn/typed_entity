@@ -8,7 +8,10 @@ use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
 
-final class RepositoryCollector {
+/**
+ * Collects the repositories and negotiates from a loaded entity.
+ */
+final class RepositoryCollector implements EntityWrapperInterface {
 
   /**
    * The collected repositories.
@@ -35,14 +38,16 @@ final class RepositoryCollector {
   }
 
   /**
+   * Adds a repository to the list.
+   *
    * @param \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface $repository
    *   The typed entity repository to collect.
    * @param string $entity_type_id
    *   The entity type ID.
-   * @param string $bundle
-   *   The bundle name.
    * @param string $wrapper_class
    *   The FQN for the class that will wrap this entity.
+   * @param string $bundle
+   *   The bundle name.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    *
@@ -91,8 +96,18 @@ final class RepositoryCollector {
     return $repository;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function wrap(EntityInterface $entity): WrappedEntityInterface {
     return $this->repositoryFromEntity($entity)->wrap($entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function wrapMultiple(array $entities): array {
+    return array_map([$this, 'wrap'], $entities);
   }
 
 }

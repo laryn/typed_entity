@@ -1,13 +1,14 @@
 <?php
 
-
 namespace Drupal\typed_entity\WrappedEntities;
-
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\typed_entity\RepositoryCollector;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Base class all wrapped entities should extend from.
+ */
 abstract class WrappedEntityBase implements WrappedEntityInterface {
 
   /**
@@ -40,19 +41,14 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
   }
 
   /**
-   * Get the label of the entity.
-   *
-   * @return string
+   * {@inheritdoc}
    */
   public function label(): string {
     return $this->getEntity()->label();
   }
 
   /**
-   * Gets the owner of the entity.
-   *
-   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface|null
-   *   The owner.
+   * {@inheritdoc}
    */
   public function owner(): ?WrappedEntityInterface {
     $owner_key = $this->getEntity()->getEntityType()->getKey('owner');

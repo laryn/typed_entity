@@ -9,7 +9,13 @@ use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
  */
 final class User extends WrappedEntityBase {
 
-  public function nickname() {
+  /**
+   * Get the user's nickname.
+   *
+   * @return string
+   *   The nickname.
+   */
+  public function nickname(): string {
     // According to our stakeholders the nickname is the part before the @ in
     // the registration email.
     $email = $this->getEntity()->mail->value;
