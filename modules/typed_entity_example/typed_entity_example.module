@@ -29,4 +29,10 @@ function typed_entity_example_node_view_alter(array &$build, EntityInterface $en
       return $article->label();
     }, $articles),
   ];
+  $author = $repository_collector->wrap($entity)
+    ->owner()
+    ->nickname();
+  $build['owner'] = [
+    '#markup' => '<p>' . t('The author is: %author', ['%author' => $author]) . '</p>',
+  ];
 }

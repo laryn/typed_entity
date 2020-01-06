@@ -60,4 +60,12 @@ interface TypedEntityRepositoryInterface {
    */
   public function getQuery(): QueryInterface;
 
+  /**
+   * Build the repository identifier.
+   *
+   * @return string
+   *   The identifier.
+   */
+  public function id(): string;
+
 }

@@ -14,6 +14,13 @@ use UnexpectedValueException;
 class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
 
   /**
+   * The separator between the entity type ID and the bundle name.
+   *
+   * @var string
+   */
+  const SEPARATOR = ':';
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -100,8 +107,20 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class): void {
     $this->validateArguments($entity_type, $bundle, $wrapper_class);
     $this->entityType = $entity_type;
-    $this->bundle = $bundle;
+    $this->bundle = $entity_type->getKey('bundle')
+      ? $bundle
+      : $entity_type->id();
     $this->wrapperClass = $wrapper_class;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function id(): string {
+    return implode(
+      static::SEPARATOR,
+      array_filter([$this->entityType->id(), $this->bundle])
+    );
   }
 
   /**
@@ -134,10 +153,10 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
       ->getBundleInfo($entity_type->id());
     // When the entity type supports bundles, the bundle parameter is mandatory.
     if (empty($bundle)) {
-      if (!empty($bundle_info)) {
+      if ($entity_type->getKey('bundle')) {
         throw new UnexpectedValueException('Missing bundle for entity type "' . $entity_type->id() . '"');
       }
-      return;
+      $bundle = $entity_type->id();
     }
     // Unless the entity is bundle-less the bundle should be valid for the given
     // entity type.

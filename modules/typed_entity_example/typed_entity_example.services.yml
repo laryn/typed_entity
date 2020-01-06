@@ -12,3 +12,12 @@ services:
         entity_type_id: node
         bundle: article
         wrapper_class: Drupal\typed_entity_example\WrappedEntities\Article
+  typed_entity_example.user:
+    class: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    parent: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    public: true
+    tags:
+      -
+        name: typed_entity_repository
+        entity_type_id: user
+        wrapper_class: Drupal\typed_entity_example\WrappedEntities\User

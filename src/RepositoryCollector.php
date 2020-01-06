@@ -4,17 +4,11 @@ namespace Drupal\typed_entity;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
 
 final class RepositoryCollector {
-
-  /**
-   * The separator between the entity type ID and the bundle name.
-   *
-   * @var string
-   */
-  const SEPARATOR = ':';
 
   /**
    * The collected repositories.
@@ -57,8 +51,8 @@ final class RepositoryCollector {
   public function addRepository(
     TypedEntityRepositoryInterface $repository,
     string $entity_type_id,
-    string $bundle,
-    string $wrapper_class
+    string $wrapper_class,
+    string $bundle = ''
   ) {
     if (empty($entity_type_id)) {
       // We get an empty entity type ID when processing the parent service. We
@@ -67,11 +61,7 @@ final class RepositoryCollector {
     }
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
     $repository->init($entity_type, $bundle, $wrapper_class);
-    $identifier = implode(
-      static::SEPARATOR,
-      array_filter([$entity_type_id, $bundle])
-    );
-    $this->repositories[$identifier] = $repository;
+    $this->repositories[$repository->id()] = $repository;
   }
 
   /**
@@ -90,7 +80,7 @@ final class RepositoryCollector {
    */
   public function repositoryFromEntity(EntityInterface $entity): TypedEntityRepositoryInterface {
     $identifier = implode(
-      static::SEPARATOR,
+      TypedEntityRepositoryBase::SEPARATOR,
       array_filter([$entity->getEntityTypeId(), $entity->bundle()])
     );
     $repository = $this->repositories[$identifier];

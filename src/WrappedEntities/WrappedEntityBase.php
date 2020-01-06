@@ -6,6 +6,7 @@ namespace Drupal\typed_entity\WrappedEntities;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\typed_entity\RepositoryCollector;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class WrappedEntityBase implements WrappedEntityInterface {
 
@@ -21,6 +22,13 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    */
   public function __construct(EntityInterface $entity) {
     $this->entity = $entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, EntityInterface $entity) {
+    return new static($entity);
   }
 
   /**
