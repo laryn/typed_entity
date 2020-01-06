@@ -8,6 +8,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
+use Drupal\typed_entity\WrappedEntityVariants\ContextAwareInterface;
+use Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use UnexpectedValueException;
 
@@ -59,6 +61,13 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   protected $wrapperClass;
 
   /**
+   * Variant conditions.
+   *
+   * @var \Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface[]
+   */
+  protected $variantConditions = [];
+
+  /**
    * RepositoryCollector constructor.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -74,15 +83,14 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    */
   public function wrap(EntityInterface $entity): WrappedEntityInterface {
     // Validate that this entity can be wrapped.
-    $can_be_wrapped = $this->entityType->id() === $entity->getEntityTypeId();
-    if ($this->bundle) {
-      $can_be_wrapped = $this->bundle === $entity->bundle();
-    }
+    $can_be_wrapped = $this->entityType->id() === $entity->getEntityTypeId()
+      && $this->bundle === $entity->bundle();
     if (!$can_be_wrapped) {
       throw new InvalidValueException('Unable to wrap entity with this repository.');
     }
+    $class = $this->negotiateVariant($entity);
     return call_user_func(
-      [$this->wrapperClass, 'create'],
+      [$class, 'create'],
       $this->container,
       $entity
     );
@@ -104,6 +112,36 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
       return $wrapped_entity instanceof $this->wrapperClass;
     }, $wrapped));
     return $wrapped;
+  }
+
+  /**
+   * Negotiates possible variants to the default based on entity values.
+   *
+   * Override this in the repositories that need variance.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return string
+   *   The negotiated variant.
+   */
+  protected function negotiateVariant(EntityInterface $entity): string {
+    // Match the first variant condition found.
+    foreach ($this->variantConditions as $variant_condition) {
+      assert($variant_condition instanceof ContextAwareInterface);
+      $variant_condition->setContext('entity', $entity);
+      assert($variant_condition instanceof VariantConditionInterface);
+      if ($variant_condition->evaluate()) {
+        // Only use it if the variant is also a wrapperClass.
+        $variant = $variant_condition->variant();
+        if (class_exists($variant) && is_subclass_of($variant, $this->wrapperClass)) {
+          // Return early to avoid evaluating more conditions.
+          return $variant;
+        }
+      }
+    }
+    // If none matches use the wrapper class.
+    return $this->wrapperClass;
   }
 
   /**

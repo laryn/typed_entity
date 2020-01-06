@@ -4,6 +4,9 @@ namespace Drupal\typed_entity_example\TypedRepositories;
 
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
+use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
+use Drupal\typed_entity_example\WrappedEntities\BakingArticle;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * The repository for articles.
@@ -14,6 +17,13 @@ final class ArticleRepository extends TypedEntityRepositoryBase {
    * The field that contains the data about the article tags.
    */
   const FIELD_TAGS_NAME = 'field_tags';
+
+  public function __construct(ContainerInterface $container) {
+    parent::__construct($container);
+    $this->variantConditions = [
+      new FieldValueVariantCondition(static::FIELD_TAGS_NAME, 24, BakingArticle::class),
+    ];
+  }
 
   /**
    * Finds article by tags.
