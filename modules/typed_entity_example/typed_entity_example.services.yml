@@ -1,8 +1,14 @@
 services:
-  Drupal\typed_entity_example\TypedRepositories\ArticleRepository:
+  typed_entity_example.article:
+    # If you don't have custom logic for your repository you can use the base
+    # class and save yourself from writing another empty class.
+    # class: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    class: Drupal\typed_entity_example\TypedRepositories\ArticleRepository
     parent: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    public: true
     tags:
       -
         name: typed_entity_repository
         entity_type_id: node
         bundle: article
+        wrapper_class: Drupal\typed_entity_example\WrappedEntities\Article

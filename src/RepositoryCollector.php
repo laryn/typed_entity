@@ -2,7 +2,9 @@
 
 namespace Drupal\typed_entity;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
 
 final class RepositoryCollector {
@@ -45,24 +47,62 @@ final class RepositoryCollector {
    *   The entity type ID.
    * @param string $bundle
    *   The bundle name.
-   * @param string $variant
-   *   An additional variant identifier.
+   * @param string $wrapper_class
+   *   The FQN for the class that will wrap this entity.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   *
+   * @todo: The variant negotiation is still missing.
    */
   public function addRepository(
     TypedEntityRepositoryInterface $repository,
-    $entity_type_id,
-    $bundle,
-    $variant = NULL
+    string $entity_type_id,
+    string $bundle,
+    string $wrapper_class
   ) {
+    if (empty($entity_type_id)) {
+      // We get an empty entity type ID when processing the parent service. We
+      // do not want to include it in the collection.
+      return;
+    }
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-    $repository->init($entity_type, $bundle);
+    $repository->init($entity_type, $bundle, $wrapper_class);
     $identifier = implode(
       static::SEPARATOR,
-      array_filter([$entity_type_id, $bundle, $variant])
+      array_filter([$entity_type_id, $bundle])
     );
     $this->repositories[$identifier] = $repository;
+  }
+
+  /**
+   * Gets the entity repository based on the entity information and the variant.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to extract info for.
+   *
+   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface
+   *   The repository for the entity.
+   *
+   * @throws \Drupal\typed_entity\RepositoryNotFoundException
+   *   When the repository was not found.
+   *
+   * @todo: The variant negotiation is still missing.
+   */
+  public function repositoryFromEntity(EntityInterface $entity): TypedEntityRepositoryInterface {
+    $identifier = implode(
+      static::SEPARATOR,
+      array_filter([$entity->getEntityTypeId(), $entity->bundle()])
+    );
+    $repository = $this->repositories[$identifier];
+    if (empty($repository)) {
+      $message = 'Repository with identifier "' . $identifier . '" not found';
+      throw new RepositoryNotFoundException($message);
+    }
+    return $repository;
+  }
+
+  public function wrap(EntityInterface $entity): WrappedEntityInterface {
+    return $this->repositoryFromEntity($entity)->wrap($entity);
   }
 
 }

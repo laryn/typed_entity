@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Module implementation file.
+ */
+
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\typed_entity\RepositoryCollector;
+use Drupal\typed_entity_example\TypedRepositories\ArticleRepository;
+use Drupal\typed_entity_example\WrappedEntities\Article;
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter().
+ */
+function typed_entity_example_node_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  if ($entity->bundle() !== 'article') {
+    return;
+  }
+  $repository_collector = \Drupal::service(RepositoryCollector::class);
+  assert($repository_collector instanceof RepositoryCollector);
+  $repository = $repository_collector->repositoryFromEntity($entity);
+  assert($repository instanceof ArticleRepository);
+  $articles = $repository->findByTags(['Vegetarian', 'heaLthy', 'Baking']);
+  $build['related'] = [
+    '#theme' => 'item_list',
+    '#items' => array_map(function (Article $article) {
+      return $article->label();
+    }, $articles),
+  ];
+}

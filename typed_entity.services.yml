@@ -8,8 +8,10 @@ services:
         call: addRepository
   Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase:
     arguments: ['@service_container']
+    public: false
     tags:
       -
         name: typed_entity_repository
-        entity_type_id: node
-        bundle: article
+        entity_type_id: ''
+        bundle: ''
+        wrapper_class: ''

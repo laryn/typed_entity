@@ -1,0 +1,17 @@
+{
+    "name": "drupal/typed_entity",
+    "description": "Provides classes based on the existing entities.",
+    "type": "drupal-project",
+    "require-dev": {
+        "e0ipso/travis-drupal-module": "^1.1"
+    },
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Mateu Aguiló Bosch",
+            "email": "mateu@mateuaguilo.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
