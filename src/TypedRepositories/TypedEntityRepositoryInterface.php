@@ -39,6 +39,8 @@ interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
    *
    * @return string
    *   The identifier.
+   *
+   * @SuppressWarnings(PHPMD.ShortMethodName)
    */
   public function id(): string;
 

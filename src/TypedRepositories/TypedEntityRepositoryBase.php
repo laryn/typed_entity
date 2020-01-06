@@ -90,6 +90,8 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @SuppressWarnings(PHPMD.StaticAccess)
    */
   public function wrapMultiple(array $entities): array {
     // Wrap all the entities.
@@ -118,6 +120,8 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @SuppressWarnings(PHPMD.ShortMethodName)
    */
   public function id(): string {
     return implode(

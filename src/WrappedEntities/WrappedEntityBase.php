@@ -49,6 +49,8 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @SuppressWarnings(PHPMD.StaticAccess)
    */
   public function owner(): ?WrappedEntityInterface {
     $owner_key = $this->getEntity()->getEntityType()->getKey('owner');
