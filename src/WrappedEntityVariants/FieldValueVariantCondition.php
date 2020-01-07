@@ -8,35 +8,77 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\typed_entity\InvalidValueException;
 
+/**
+ * Configurable variant condition that checks for a given value in a field.
+ */
 class FieldValueVariantCondition implements VariantConditionInterface, ContextAwareInterface {
 
   use ContextAwareTrait;
   use StringTranslationTrait;
 
+  /**
+   * Inverse the result of the evaluation.
+   *
+   * @var bool
+   */
   protected $isNegated = FALSE;
+
+  /**
+   * Name of the field that contains the data.
+   *
+   * @var string
+   */
   protected $fieldName = '';
+
+  /**
+   * The value to check for.
+   *
+   * @var null
+   */
   protected $value = NULL;
+
+  /**
+   * The FQN of the wrapper class for the variant.
+   *
+   * @var string
+   */
   protected $variant;
 
   /**
    * FieldValueVariantCondition constructor.
    *
-   * @param bool $is_negated
    * @param string $field_name
-   * @param null $value
-   * @param $variant
+   *   Name of the field that contains the data.
+   * @param mixed $value
+   *   The value to check for.
+   * @param string $variant
+   *   The FQN of the wrapper class for the variant.
+   * @param bool $is_negated
+   *   Inverse the result of the evaluation.
+   *
+   * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
    */
-  public function __construct(string $field_name, $value, $variant, bool $is_negated = FALSE) {
+  public function __construct(string $field_name, $value, string $variant, bool $is_negated = FALSE) {
     $this->isNegated = $is_negated;
     $this->fieldName = $field_name;
     $this->value = $value;
     $this->variant = $variant;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function isNegated(): bool {
     return $this->isNegated;
   }
 
+  /**
+   * {@inheritdoc}
+   *
+   * @throws \Drupal\typed_entity\InvalidValueException
+   *
+   * @SuppressWarnings(PHPMD.StaticAccess)
+   */
   public function evaluate(): bool {
     $this->validateContext();
     $entity = $this->getContext('entity');
@@ -55,6 +97,9 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
     return $this->isNegated() ? !$result : $result;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function summary(): string {
     return $this->t('Active when the %field is %value.', [
       '%field' => $this->fieldName,
@@ -62,6 +107,9 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
     ]);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function variant(): string {
     return $this->variant;
   }
