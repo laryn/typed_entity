@@ -1,6 +1,6 @@
 {
     "name": "drupal/typed_entity",
-    "type": "drupal-project",
+    "type": "drupal-module",
     "description": "Provides classes based on the existing entities.",
     "license": "GPL-2.0",
     "authors": [
@@ -10,8 +10,6 @@
         }
     ],
     "require": {},
-    "require-dev": {
-        "e0ipso/travis-drupal-module": "^1.1"
-    },
+    "require-dev": {},
     "minimum-stability": "dev"
 }
