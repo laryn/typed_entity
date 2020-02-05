@@ -41,9 +41,28 @@ final class RepositoryManager implements EntityWrapperInterface {
    * @todo: The variant negotiation is still missing.
    */
   public function repositoryFromEntity(EntityInterface $entity): TypedEntityRepositoryInterface {
+    return $this->repository($entity->getEntityTypeId(), $entity->bundle());
+  }
+
+  /**
+   * Gets the entity repository based on the entity information and the variant.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to extract info for.
+   *
+   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface
+   *   The repository for the entity.
+   *
+   * @throws \Drupal\typed_entity\RepositoryNotFoundException
+   *   When the repository was not found.
+   *
+   * @todo: The variant negotiation is still missing.
+   */
+  public function repository(string $entity_type_id, string $bundle = ''): TypedEntityRepositoryInterface {
+    $bundle = $bundle ?: $entity_type_id;
     $identifier = implode(
       TypedEntityRepositoryBase::SEPARATOR,
-      array_filter([$entity->getEntityTypeId(), $entity->bundle()])
+      array_filter([$entity_type_id, $bundle])
     );
     $repository = $this->collector->get($identifier);
     if (empty($repository)) {
