@@ -55,15 +55,39 @@ final class RepositoryCollector {
     string $entity_type_id,
     string $wrapper_class,
     string $bundle = ''
-  ) {
+  ): void {
     if (empty($entity_type_id)) {
       // We get an empty entity type ID when processing the parent service. We
       // do not want to include it in the collection.
       return;
     }
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-    $repository->init($entity_type, $bundle, $wrapper_class);
+    empty($bundle)
+      ? $this->addAllBundles($repository, $entity_type_id, $wrapper_class)
+      : $repository->init($entity_type, $bundle, $wrapper_class);
     $this->repositories[$repository->id()] = $repository;
+  }
+
+  /**
+   * Adds all the bundles for an entity type using the provided class.
+   *
+   * @param \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface $repository
+   *   The repository to add.
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $wrapper_class
+   *   The class to use for the wrapper.
+   */
+  private function addAllBundles(
+    TypedEntityRepositoryInterface $repository,
+    string $entity_type_id,
+    string $wrapper_class
+  ): void {
+    $bundle_info = \Drupal::service('entity_type.bundle.info')
+      ->getBundleInfo($entity_type_id);
+    array_map(function (string $bunde) use ($repository, $entity_type_id, $wrapper_class) {
+      $this->addRepository($repository, $entity_type_id, $wrapper_class, $bunde);
+    }, array_keys($bundle_info));
   }
 
   /**
