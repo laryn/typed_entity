@@ -85,7 +85,7 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
     assert($entity instanceof FieldableEntityInterface);
     // Check if the any of the values for the field match the configured value.
     $values = $entity->get($this->fieldName)->getValue();
-    // TODO: explore the field configuration to learn about the main property.
+    // TODO: inject the field manager for testability.
     $field_manager = \Drupal::service('entity_field.manager');
     assert($field_manager instanceof EntityFieldManager);
     $definition = $field_manager->getFieldStorageDefinitions($entity->getEntityTypeId())[$this->fieldName];
