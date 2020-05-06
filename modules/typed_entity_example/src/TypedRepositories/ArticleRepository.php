@@ -55,7 +55,6 @@ final class ArticleRepository extends TypedEntityRepositoryBase {
    *   The result of the execution of the query.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
   private function findItemsByTags(array $tags) {
     $query = $this->getQuery();

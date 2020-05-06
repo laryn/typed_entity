@@ -1,0 +1,7 @@
+type: module
+name: Typed Entity Module Test
+description: Testing module for typed_entity functionality.
+package: Testing
+dependencies:
+  - typed_entity
+hidden: TRUE

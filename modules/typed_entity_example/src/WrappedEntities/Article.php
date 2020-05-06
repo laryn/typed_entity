@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * The wrapped entity for the article content type.
  */
-class Article extends WrappedEntityBase {
+final class Article extends WrappedEntityBase {
 
   /**
    * The messenger.

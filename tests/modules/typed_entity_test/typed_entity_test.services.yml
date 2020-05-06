@@ -1,0 +1,21 @@
+services:
+  typed_entity_test.article:
+    class: Drupal\typed_entity_test\TypedRepositories\ArticleRepository
+    parent: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    public: true
+    tags:
+      -
+        name: typed_entity_repository
+        entity_type_id: node
+        bundle: article
+        wrapper_class: Drupal\typed_entity_test\WrappedEntities\Article
+  typed_entity_test.page:
+    class: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    parent: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+    public: true
+    tags:
+      -
+        name: typed_entity_repository
+        entity_type_id: node
+        bundle: page
+        wrapper_class: Drupal\typed_entity_test\WrappedEntities\Page
