@@ -54,13 +54,6 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
   protected $viewMode = 'default';
 
   /**
-   * The view builder.
-   *
-   * @var \Drupal\Core\Entity\EntityViewBuilderInterface
-   */
-  protected $viewBuilder;
-
-  /**
    * The entity.
    *
    * @var \Drupal\Core\Entity\EntityInterface
@@ -68,15 +61,32 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
   protected $entity;
 
   /**
+   * The view builder.
+   *
+   * @var \Drupal\Core\Entity\EntityViewBuilderInterface
+   */
+  protected $viewBuilder;
+
+  /**
+   * The repository manager.
+   *
+   * @var \Drupal\typed_entity\RepositoryManager
+   */
+  protected $repositoryManager;
+
+  /**
    * WrappedEntityBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to wrap.
+   * @param \Drupal\typed_entity\RepositoryManager $repository_manager
+   *   The repository manager.
    * @param \Drupal\Core\Entity\EntityViewBuilderInterface $entity_view_builder
    *   The view builder.
    */
-  public function __construct(EntityInterface $entity, EntityViewBuilderInterface $entity_view_builder) {
+  public function __construct(EntityInterface $entity, RepositoryManager $repository_manager, EntityViewBuilderInterface $entity_view_builder) {
     $this->entity = $entity;
+    $this->repositoryManager = $repository_manager;
     $this->viewBuilder = $entity_view_builder;
   }
 
@@ -86,7 +96,8 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
   public static function create(ContainerInterface $container, EntityInterface $entity) {
     $entity_view_builder = $container->get('entity_type.manager')
       ->getViewBuilder($entity->getEntityTypeId());
-    return new static($entity, $entity_view_builder);
+    $repository_manager = $container->get(RepositoryManager::class);
+    return new static($entity, $repository_manager, $entity_view_builder);
   }
 
   /**
@@ -106,21 +117,13 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
 
   /**
    * {@inheritdoc}
-   *
-   * @SuppressWarnings(PHPMD.StaticAccess)
    */
   public function owner(): ?WrappedEntityInterface {
     $owner_key = $this->getEntity()->getEntityType()->getKey('owner');
     if (!$owner_key) {
       return NULL;
     }
-    $owner = $this->getEntity()->{$owner_key}->entity;
-    if (!$owner instanceof EntityInterface) {
-      return NULL;
-    }
-    $manager = \Drupal::service(RepositoryManager::class);
-    assert($manager instanceof RepositoryManager);
-    return $manager->wrap($owner);
+    return $this->wrapReference($owner_key);
   }
 
   /**
@@ -138,6 +141,49 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
    */
   public function toRenderable(): array {
     return $this->viewBuilder->view($this->getEntity(), $this->viewMode);
+  }
+
+  /**
+   * Wraps all the entities referenced by the field name.
+   *
+   * @param string $field_name
+   *   The name of the entity reference field.
+   *
+   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface[]
+   *   The wrapped referenced entities.
+   *
+   * @throws \Drupal\typed_entity\InvalidValueException
+   */
+  public function wrapReferences(string $field_name): array {
+    $references = [];
+    foreach ($this->getEntity()->{$field_name} as $item) {
+      $target_entity = $item->entity;
+      if (!$target_entity instanceof EntityInterface) {
+        continue;
+      }
+      $references[] = $this->repositoryManager->wrap($target_entity);
+    }
+
+    return $references;
+  }
+
+  /**
+   * Wraps the first entity referenced by the field name.
+   *
+   * @param string $field_name
+   *   The name of the entity reference field.
+   *
+   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface
+   *   The wrapped referenced entity.
+   *
+   * @throws \Drupal\typed_entity\InvalidValueException
+   */
+  public function wrapReference(string $field_name): ?WrappedEntityInterface {
+    $target_entity = $this->getEntity()->{$field_name}->entity;
+    if (!$target_entity instanceof EntityInterface) {
+      return NULL;
+    }
+    return $this->repositoryManager->wrap($target_entity);
   }
 
 }

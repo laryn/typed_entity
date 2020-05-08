@@ -42,7 +42,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
     $article_wrapper = $repository->wrap($article);
     $this->assertInstanceOf(Article::class, $article_wrapper);
 
-    $article->field_type->value = 'News';
+    $article->field_node_type->value = 'News';
     $article->save();
     $article_wrapper = $repository->wrap($article);
     $this->assertInstanceOf(NewsArticle::class, $article_wrapper);

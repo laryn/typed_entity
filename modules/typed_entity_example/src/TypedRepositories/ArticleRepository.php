@@ -2,11 +2,11 @@
 
 namespace Drupal\typed_entity_example\TypedRepositories;
 
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
 use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
 use Drupal\typed_entity_example\WrappedEntities\BakingArticle;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * The repository for articles.
@@ -21,11 +21,15 @@ final class ArticleRepository extends TypedEntityRepositoryBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ContainerInterface $container) {
-    parent::__construct($container);
-    $this->variantConditions = [
-      new FieldValueVariantCondition(static::FIELD_TAGS_NAME, 24, BakingArticle::class),
-    ];
+  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class): void {
+    parent::init($entity_type, $bundle, $wrapper_class);
+    $field_map = $this->container->get('entity_field.manager')->getFieldMap();
+    $has_field = $field_map[$entity_type->id()][static::FIELD_TAGS_NAME]['bundles'][$bundle] ?? NULL;
+    if ($has_field) {
+      $this->variantConditions = [
+        new FieldValueVariantCondition(static::FIELD_TAGS_NAME, 24, BakingArticle::class),
+      ];
+    }
   }
 
   /**

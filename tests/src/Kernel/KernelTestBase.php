@@ -53,7 +53,7 @@ abstract class KernelTestBase extends BaseTestsKernelTestBase {
     $node_type->save();
 
     $field_storage = FieldStorageConfig::create([
-      'field_name' => 'field_type',
+      'field_name' => 'field_node_type',
       'entity_type' => 'node',
       'type' => 'string',
     ]);
