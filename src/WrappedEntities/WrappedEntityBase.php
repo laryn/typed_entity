@@ -79,25 +79,16 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to wrap.
-   * @param \Drupal\typed_entity\RepositoryManager $repository_manager
-   *   The repository manager.
-   * @param \Drupal\Core\Entity\EntityViewBuilderInterface $entity_view_builder
-   *   The view builder.
    */
-  public function __construct(EntityInterface $entity, RepositoryManager $repository_manager, EntityViewBuilderInterface $entity_view_builder) {
+  public function __construct(EntityInterface $entity) {
     $this->entity = $entity;
-    $this->repositoryManager = $repository_manager;
-    $this->viewBuilder = $entity_view_builder;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, EntityInterface $entity) {
-    $entity_view_builder = $container->get('entity_type.manager')
-      ->getViewBuilder($entity->getEntityTypeId());
-    $repository_manager = $container->get(RepositoryManager::class);
-    return new static($entity, $repository_manager, $entity_view_builder);
+    return new static($entity);
   }
 
   /**
@@ -140,7 +131,7 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
    * {@inheritdoc}
    */
   public function toRenderable(): array {
-    return $this->viewBuilder->view($this->getEntity(), $this->viewMode);
+    return $this->viewBuilder()->view($this->getEntity(), $this->viewMode);
   }
 
   /**
@@ -161,7 +152,7 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
       if (!$target_entity instanceof EntityInterface) {
         continue;
       }
-      $references[] = $this->repositoryManager->wrap($target_entity);
+      $references[] = $this->repositoryManager()->wrap($target_entity);
     }
 
     return $references;
@@ -183,7 +174,59 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
     if (!$target_entity instanceof EntityInterface) {
       return NULL;
     }
-    return $this->repositoryManager->wrap($target_entity);
+    return $this->repositoryManager()->wrap($target_entity);
+  }
+
+  /**
+   * Lazy initialized of the repository manager.
+   *
+   * @return \Drupal\typed_entity\RepositoryManager
+   *   The repository manager.
+   */
+  protected function repositoryManager(): RepositoryManager {
+    if (!$this->repositoryManager) {
+      $this->repositoryManager = \Drupal::service(RepositoryManager::class);
+    }
+    return $this->repositoryManager;
+  }
+
+  /**
+   * Lazy initialized of the view builder.
+   *
+   * @return \Drupal\Core\Entity\EntityViewBuilderInterface
+   *   The repository manager.
+   */
+  protected function viewBuilder(): EntityViewBuilderInterface {
+    if (!$this->viewBuilder) {
+      $entity = $this->getEntity()->getEntityTypeId();
+      $entity_type_manager = \Drupal::entityTypeManager();
+      $this->viewBuilder = $entity_type_manager->getViewBuilder($entity);
+    }
+    return $this->viewBuilder;
+  }
+
+  /**
+   * Sets the view builder.
+   *
+   * This is mostly here for testing ergonomics.
+   *
+   * @param \Drupal\Core\Entity\EntityViewBuilderInterface $view_builder
+   *   The view builder.
+   */
+  public function setViewBuilder(EntityViewBuilderInterface $view_builder): void {
+    $this->viewBuilder = $view_builder;
+  }
+
+  /**
+   * Sets the repository manager.
+   *
+   * This is mostly here for testing ergonomics.
+   *
+   * @param \Drupal\typed_entity\RepositoryManager $repository_manager
+   *   The manager.
+   */
+  public function setRepositoryManager(RepositoryManager $repository_manager): void {
+    $this->repositoryManager = $repository_manager;
   }
 
 }
