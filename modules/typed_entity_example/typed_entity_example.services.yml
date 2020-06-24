@@ -12,6 +12,8 @@ services:
         entity_type_id: node
         bundle: article
         wrapper_class: Drupal\typed_entity_example\WrappedEntities\Article
+    calls:
+      - ['setRenderers', [['@typed_entity_example.article.renderer.summary']]]
   typed_entity_example.user:
     class: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
     parent: Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
@@ -21,3 +23,8 @@ services:
         name: typed_entity_repository
         entity_type_id: user
         wrapper_class: Drupal\typed_entity_example\WrappedEntities\User
+
+  typed_entity_example.article.renderer.summary:
+    class: Drupal\typed_entity_example\Render\Summary
+    parent: Drupal\typed_entity\Render\TypedEntityRendererBase
+    public: true

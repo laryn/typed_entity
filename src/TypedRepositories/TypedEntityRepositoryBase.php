@@ -7,6 +7,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\typed_entity\InvalidValueException;
+use Drupal\typed_entity\Render\TypedEntityRenderContext;
+use Drupal\typed_entity\Render\TypedEntityRendererBase;
+use Drupal\typed_entity\Render\TypedEntityRendererInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\WrappedEntityVariants\ContextAwareInterface;
 use Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface;
@@ -66,6 +69,13 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    * @var \Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface[]
    */
   protected $variantConditions = [];
+
+  /**
+   * The renderers for this repository keyed by ID.
+   *
+   * @var \Drupal\typed_entity\Render\TypedEntityRendererInterface[]
+   */
+  protected $renderers = [];
 
   /**
    * RepositoryCollector constructor.
@@ -183,6 +193,23 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function rendererFactory(TypedEntityRenderContext $context): TypedEntityRendererInterface {
+    // Setting the ID in the special key will allow to force a particular
+    // renderer.
+    $renderer_id = $context['renderer_id'] ?? NULL;
+    if (!$renderer_id) {
+      $candidates = array_filter($this->renderers, function (TypedEntityRendererInterface $renderer) use ($context) {
+        return $renderer::applies($context);
+      });
+      // In case of multiple candidates choose the first ID.
+      $renderer_id = key($candidates);
+    }
+    return $this->renderers[$renderer_id] ?? $this->fallbackRenderer();
+  }
+
+  /**
    * Validates the repository initialization arguments.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -244,6 +271,37 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
       ->loadMultiple(array_values($items));
     // Then wraps them all.
     return $this->wrapMultiple($entities);
+  }
+
+  /**
+   * Sets and validates the renderers.
+   *
+   * @param array $renderers
+   *   Services passed by the container.
+   */
+  public function setRenderers(array $renderers): void {
+    $invalid_renderers = array_filter($renderers, static function ($renderer) {
+      return !$renderer instanceof TypedEntityRendererInterface;
+    });
+    if (!empty($invalid_renderers)) {
+      $message = sprintf(
+        'The following renderers do not implement the "TypedEntityRendererInterface" but they are used in %s: %s',
+        get_class($this),
+        implode(', ', array_keys($invalid_renderers))
+      );
+      throw new UnexpectedValueException($message);
+    }
+    $this->renderers = $renderers;
+  }
+
+  /**
+   * The fallback renderer.
+   *
+   * @return \Drupal\typed_entity\Render\TypedEntityRendererInterface
+   *   The renderer.
+   */
+  protected function fallbackRenderer(): TypedEntityRendererInterface {
+    return $this->container->get(TypedEntityRendererBase::class);
   }
 
 }

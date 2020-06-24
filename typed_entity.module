@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Module implementation file.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\typed_entity\Render\TypedEntityRenderContext;
+use Drupal\typed_entity\RepositoryManager;
+use Drupal\typed_entity\RepositoryNotFoundException;
+
+/**
+ * Implements hook_entity_build_defaults_alter().
+ */
+function typed_entity_entity_build_defaults_alter(array &$build, $entity, $view_mode) {
+  if (!$entity instanceof EntityInterface) {
+    // Unable to find the entity.
+    return;
+  }
+  $repository_manager = \Drupal::service(RepositoryManager::class);
+  assert($repository_manager instanceof RepositoryManager);
+  try {
+    $repository = $repository_manager->repository($entity->getEntityTypeId(), $entity->bundle());
+  }
+  catch (RepositoryNotFoundException $e) {
+    // The entity being preprocessed does not have a repository.
+    return;
+  }
+  $context = _typed_entity_build_render_context($build);
+  $context['view_mode'] = $view_mode;
+  $renderer = $repository->rendererFactory($context);
+  $renderer->preprocess($build);
+}
+
+/**
+ * Extract the context information for rendering from the render array.
+ *
+ * @param array $variables
+ *   The variables array.
+ *
+ * @return \Drupal\typed_entity\Render\TypedEntityRenderContext
+ *   The render context.
+ */
+function _typed_entity_build_render_context(array $variables): TypedEntityRenderContext {
+  // Get only the properties that start by a '#'.
+  $context = new TypedEntityRenderContext();
+  foreach ($variables as $key => $value) {
+    if (!is_string($key) || $key[0] !== '#') {
+      continue;
+    }
+    $name = substr($key, 1);
+    $context[$name] = $value;
+  }
+  return $context;
+}

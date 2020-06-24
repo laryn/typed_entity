@@ -5,6 +5,8 @@ namespace Drupal\typed_entity\TypedRepositories;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\typed_entity\EntityWrapperInterface;
+use Drupal\typed_entity\Render\TypedEntityRenderContext;
+use Drupal\typed_entity\Render\TypedEntityRendererInterface;
 
 /**
  * Entity repository.
@@ -43,5 +45,27 @@ interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
    * @SuppressWarnings(PHPMD.ShortMethodName)
    */
   public function id(): string;
+
+  /**
+   * Gets the renderer for the current context.
+   *
+   * Override this method in your repository for more nuanced rules on when to
+   * use a renderer or another.
+   *
+   * @param \Drupal\typed_entity\Render\TypedEntityRenderContext $context
+   *   The context used for render.
+   *
+   * @return \Drupal\typed_entity\Render\TypedEntityRendererInterface
+   *   The renderer.
+   */
+  public function rendererFactory(TypedEntityRenderContext $context): TypedEntityRendererInterface;
+
+  /**
+   * Sets and validates the renderers.
+   *
+   * @param array $renderers
+   *   Services passed by the container.
+   */
+  public function setRenderers(array $renderers): void;
 
 }
