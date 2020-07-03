@@ -2,6 +2,7 @@
 
 namespace Drupal\typed_entity\Render;
 
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
 class TypedEntityRendererBase implements TypedEntityRendererInterface {
@@ -48,7 +49,14 @@ class TypedEntityRendererBase implements TypedEntityRendererInterface {
    *
    * By default do nothing.
    */
-  public function preprocess(&$variables): void {}
+  public function preprocess(array &$variables, WrappedEntityInterface $wrapped_entity): void {}
+
+  /**
+   * {@inheritdoc}
+   *
+   * By default do nothing.
+   */
+  public function viewAlter(array &$build, WrappedEntityInterface $wrapped_entity, EntityViewDisplayInterface $display): void {}
 
   /**
    * {@inheritdoc}

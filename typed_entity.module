@@ -5,32 +5,70 @@
  * Module implementation file.
  */
 
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\Render\TypedEntityRenderContext;
+use Drupal\typed_entity\Render\TypedEntityRendererInterface;
 use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\RepositoryNotFoundException;
 
 /**
- * Implements hook_entity_build_defaults_alter().
+ * Implements hook_entity_view_alter().
  */
-function typed_entity_entity_build_defaults_alter(array &$build, $entity, $view_mode) {
+function typed_entity_entity_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
   if (!$entity instanceof EntityInterface) {
     // Unable to find the entity.
     return;
   }
-  $repository_manager = \Drupal::service(RepositoryManager::class);
-  assert($repository_manager instanceof RepositoryManager);
   try {
-    $repository = $repository_manager->repository($entity->getEntityTypeId(), $entity->bundle());
+    [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $build);
   }
-  catch (RepositoryNotFoundException $e) {
-    // The entity being preprocessed does not have a repository.
+  catch (InvalidValueException | RepositoryNotFoundException $e) {
     return;
   }
+  $build = array_reduce($renderers, static function (array $build, TypedEntityRendererInterface $renderer) use ($wrapped_entity, $display) {
+    $renderer->viewAlter($build, $wrapped_entity, $display);
+    return $build;
+  }, $build);
+}
+
+/**
+ * Implements hook_preprocess().
+ */
+function typed_entity_preprocess(&$variables, $hook) {
+  $entity = $variables[$hook] ?? NULL;
+  if (!$entity instanceof EntityInterface) {
+    return;
+  }
+  try {
+    [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $variables['elements'] ?? []);
+  }
+  catch (InvalidValueException | RepositoryNotFoundException $e) {
+    return;
+  }
+  $variables = array_reduce($renderers, static function (array $vars, TypedEntityRendererInterface $renderer) use ($wrapped_entity) {
+    $renderer->preprocess($vars, $wrapped_entity);
+    return $vars;
+  }, $variables);
+}
+
+/**
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ * @param array $build
+ *
+ * @return array
+ * @throws \Drupal\typed_entity\InvalidValueException
+ * @throws \Drupal\typed_entity\RepositoryNotFoundException
+ */
+function _typed_entity_find_renderers(EntityInterface $entity, array $build): array {
+  $repository_manager = \Drupal::service(RepositoryManager::class);
+  assert($repository_manager instanceof RepositoryManager);
+  $repository = $repository_manager->repository($entity->getEntityTypeId(), $entity->bundle());
   $context = _typed_entity_build_render_context($build);
-  $context['view_mode'] = $view_mode;
-  $renderer = $repository->rendererFactory($context);
-  $renderer->preprocess($build);
+  $renderers = $repository->rendererFactory($context);
+  $wrapped_entity = $repository->wrap($entity);
+  return [$renderers, $wrapped_entity];
 }
 
 /**

@@ -17,8 +17,5 @@ services:
         entity_type_id: ''
         bundle: ''
         wrapper_class: ''
-    calls:
-      # By default no renderer is passed.
-      - ['setRenderers', [[]]]
   Drupal\typed_entity\Render\TypedEntityRendererBase:
     arguments: ['@entity_type.manager']

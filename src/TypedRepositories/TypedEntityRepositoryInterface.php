@@ -55,17 +55,17 @@ interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
    * @param \Drupal\typed_entity\Render\TypedEntityRenderContext $context
    *   The context used for render.
    *
-   * @return \Drupal\typed_entity\Render\TypedEntityRendererInterface
-   *   The renderer.
+   * @return \Drupal\typed_entity\Render\TypedEntityRendererInterface[]
+   *   All the renderers that might apply.
    */
-  public function rendererFactory(TypedEntityRenderContext $context): TypedEntityRendererInterface;
+  public function rendererFactory(TypedEntityRenderContext $context): array;
 
   /**
-   * Sets and validates the renderers.
+   * Adds a renderer.
    *
-   * @param array $renderers
-   *   Services passed by the container.
+   * @param \Drupal\typed_entity\Render\TypedEntityRendererInterface $renderer
+   *   The renderer.
    */
-  public function setRenderers(array $renderers): void;
+  public function addRenderer(TypedEntityRendererInterface $renderer): void;
 
 }

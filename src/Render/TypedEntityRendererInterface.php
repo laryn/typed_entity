@@ -2,8 +2,7 @@
 
 namespace Drupal\typed_entity\Render;
 
-use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
 interface TypedEntityRendererInterface {
@@ -25,10 +24,34 @@ interface TypedEntityRendererInterface {
   public function build(WrappedEntityInterface $wrapped_entity, TypedEntityRenderContext $context): array;
 
   /**
-   * @param array $variables
+   * Alter the render array for the associated entity.
+   *
+   * The children added here will be rendered without any changes necessary in
+   * the template. If you want to pass raw variables to the template use
+   * ::preprocess.
+   *
+   * @param array $build
    *   The render array being preprocessed.
+   * @param \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface $wrapped_entity
+   *   The wrapped entity.
+   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
+   *   The entity view display.
+   *
+   * @see ::preprocess()
    */
-  public function preprocess(&$variables): void ;
+  public function viewAlter(array &$build, WrappedEntityInterface $wrapped_entity, EntityViewDisplayInterface $display): void;
+
+  /**
+   * Custom preprocessing for the renderer.
+   *
+   * @param array $variables
+   *   The render array passed by reference.
+   * @param \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface $wrapped_entity
+   *   The typed entity being processed. It is only here for context. It is not
+   *   recommended to extract data from the entity directly without passing it
+   *   through the render pipeline.
+   */
+  public function preprocess(array &$variables, WrappedEntityInterface $wrapped_entity): void;
 
   /**
    * Checks if a renderer should be used in a given context.

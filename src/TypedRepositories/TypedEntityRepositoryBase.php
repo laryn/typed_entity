@@ -141,7 +141,13 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
       assert($variant_condition instanceof ContextAwareInterface);
       $variant_condition->setContext('entity', $entity);
       assert($variant_condition instanceof VariantConditionInterface);
-      if ($variant_condition->evaluate()) {
+      try {
+        $valid = $variant_condition->evaluate();
+      }
+      catch (InvalidValueException $e) {
+        $valid = FALSE;
+      }
+      if ($valid) {
         // Only use it if the variant is also a wrapperClass.
         $variant = $variant_condition->variant();
         if (class_exists($variant) && is_subclass_of($variant, $this->wrapperClass)) {
@@ -195,18 +201,14 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function rendererFactory(TypedEntityRenderContext $context): TypedEntityRendererInterface {
-    // Setting the ID in the special key will allow to force a particular
-    // renderer.
-    $renderer_id = $context['renderer_id'] ?? NULL;
-    if (!$renderer_id) {
-      $candidates = array_filter($this->renderers, function (TypedEntityRendererInterface $renderer) use ($context) {
+  public function rendererFactory(TypedEntityRenderContext $context): array {
+    $valid_renderers = array_filter(
+      $this->renderers,
+      static function (TypedEntityRendererInterface $renderer) use ($context) {
         return $renderer::applies($context);
-      });
-      // In case of multiple candidates choose the first ID.
-      $renderer_id = key($candidates);
-    }
-    return $this->renderers[$renderer_id] ?? $this->fallbackRenderer();
+      }
+    );
+    return empty($valid_renderers) ? [$this->fallbackRenderer()] : $valid_renderers;
   }
 
   /**
@@ -274,24 +276,10 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   }
 
   /**
-   * Sets and validates the renderers.
-   *
-   * @param array $renderers
-   *   Services passed by the container.
+   * {@inheritdoc}
    */
-  public function setRenderers(array $renderers): void {
-    $invalid_renderers = array_filter($renderers, static function ($renderer) {
-      return !$renderer instanceof TypedEntityRendererInterface;
-    });
-    if (!empty($invalid_renderers)) {
-      $message = sprintf(
-        'The following renderers do not implement the "TypedEntityRendererInterface" but they are used in %s: %s',
-        get_class($this),
-        implode(', ', array_keys($invalid_renderers))
-      );
-      throw new UnexpectedValueException($message);
-    }
-    $this->renderers = $renderers;
+  public function addRenderer(TypedEntityRendererInterface $renderer): void {
+    $this->renderers[] = $renderer;
   }
 
   /**
