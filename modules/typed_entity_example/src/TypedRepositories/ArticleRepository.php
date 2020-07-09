@@ -21,8 +21,8 @@ final class ArticleRepository extends TypedEntityRepositoryBase {
   /**
    * {@inheritdoc}
    */
-  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class): void {
-    parent::init($entity_type, $bundle, $wrapper_class);
+  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id = ''): void {
+    parent::init($entity_type, $bundle, $wrapper_class, $fallback_renderer_id);
     $field_map = $this->container->get('entity_field.manager')->getFieldMap();
     $has_field = $field_map[$entity_type->id()][static::FIELD_TAGS_NAME]['bundles'][$bundle] ?? NULL;
     if ($has_field) {

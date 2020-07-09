@@ -23,8 +23,10 @@ interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
    * @param string $wrapper_class
    *   The class to instantiate when creating wrapped entities using this
    *   repository.
+   * @param string $fallback_renderer_id
+   *   The service ID of the fallback renderer.
    */
-  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class): void;
+  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id = ''): void;
 
   /**
    * Gets a query to start finding items.

@@ -3,6 +3,7 @@
 namespace Drupal\typed_entity;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
 
 /**
@@ -45,6 +46,8 @@ final class RepositoryCollector {
    *   The FQN for the class that will wrap this entity.
    * @param string $bundle
    *   The bundle name.
+   * @param \Drupal\typed_entity\Render\TypedEntityRendererInterface|null $fallback_renderer
+   *   The fallback renderer.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    *
@@ -54,8 +57,10 @@ final class RepositoryCollector {
     TypedEntityRepositoryInterface $repository,
     string $entity_type_id,
     string $wrapper_class,
-    string $bundle = ''
+    string $bundle = '',
+    string $fallback_renderer = NULL
   ): void {
+    $fallback_renderer = $fallback_renderer ?? '';
     if (empty($entity_type_id)) {
       // We get an empty entity type ID when processing the parent service. We
       // do not want to include it in the collection.
@@ -63,8 +68,8 @@ final class RepositoryCollector {
     }
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
     empty($bundle)
-      ? $this->addAllBundles($repository, $entity_type_id, $wrapper_class)
-      : $repository->init($entity_type, $bundle, $wrapper_class);
+      ? $this->addAllBundles($repository, $entity_type_id, $wrapper_class, $fallback_renderer)
+      : $repository->init($entity_type, $bundle, $wrapper_class, $fallback_renderer);
     $this->repositories[$repository->id()] = $repository;
   }
 
@@ -77,16 +82,19 @@ final class RepositoryCollector {
    *   The entity type ID.
    * @param string $wrapper_class
    *   The class to use for the wrapper.
+   * @param \Drupal\typed_entity\Render\TypedEntityRendererInterface|null $fallback_renderer
+   *   The fallback renderer.
    */
   private function addAllBundles(
     TypedEntityRepositoryInterface $repository,
     string $entity_type_id,
-    string $wrapper_class
+    string $wrapper_class,
+    $fallback_renderer = NULL
   ): void {
     $bundle_info = \Drupal::service('entity_type.bundle.info')
       ->getBundleInfo($entity_type_id);
-    array_map(function (string $bunde) use ($repository, $entity_type_id, $wrapper_class) {
-      $this->addRepository($repository, $entity_type_id, $wrapper_class, $bunde);
+    array_map(function (string $bunde) use ($repository, $entity_type_id, $wrapper_class, $fallback_renderer) {
+      $this->addRepository($repository, $entity_type_id, $wrapper_class, $bunde, $fallback_renderer);
     }, array_keys($bundle_info));
   }
 

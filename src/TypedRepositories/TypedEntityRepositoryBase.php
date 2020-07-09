@@ -10,6 +10,7 @@ use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
+use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\WrappedEntityVariants\ContextAwareInterface;
 use Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface;
@@ -76,6 +77,13 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    * @var \Drupal\typed_entity\Render\TypedEntityRendererInterface[]
    */
   protected $renderers = [];
+
+  /**
+   * The fallback renderer used when no renderer is appropriate.
+   *
+   * @var \Drupal\typed_entity\Render\TypedEntityRendererInterface
+   */
+  protected $fallbackRenderer;
 
   /**
    * RepositoryCollector constructor.
@@ -163,12 +171,16 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class): void {
-    $this->validateArguments($entity_type, $bundle, $wrapper_class);
+  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id = ''): void {
+    $fallback_renderer_id = empty($fallback_renderer_id)
+      ? TypedEntityRendererBase::class
+      : $fallback_renderer_id;
+    $this->validateArguments($entity_type, $bundle, $wrapper_class, $fallback_renderer_id);
     $this->entityType = $entity_type;
     $this->bundle = $entity_type->getKey('bundle')
       ? $bundle
       : $entity_type->id();
+    $this->fallbackRenderer = $this->container->get($fallback_renderer_id);
     $this->wrapperClass = $wrapper_class;
   }
 
@@ -220,8 +232,10 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    *   The bundle name.
    * @param string $wrapper_class
    *   The wrapper class for entities.
+   * @param string $fallback_renderer_id
+   *   The service ID for the fallback renderer.
    */
-  private function validateArguments(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class): void {
+  private function validateArguments(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id): void {
     $bundle_info = $this->container
       ->get('entity_type.bundle.info')
       ->getBundleInfo($entity_type->id());
@@ -244,8 +258,19 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
       throw new UnexpectedValueException($message);
     }
     // Ensure the wrapper class implements the expected interface.
-    if (is_a($wrapper_class, WrappedEntityInterface::class)) {
-      $message = 'The wrapper class "' . $wrapper_class . '" must implement "' . WrappedEntityInterface::class . '".';
+    if (!is_a($wrapper_class, WrappedEntityBase::class, TRUE)) {
+      $message = 'The wrapper class "' . $wrapper_class . '" must extend "' . WrappedEntityBase::class . '" for backwards compatibility safety.';
+      throw new UnexpectedValueException($message);
+    }
+    // Ensure there is a service for the fallback renderer ID.
+    if (!$this->container->has($fallback_renderer_id)) {
+      $message = 'Non-existing service "' . $fallback_renderer_id . '" provided as a fallback renderer.';
+      throw new UnexpectedValueException($message);
+    }
+    // Ensure the fallback renderer is appropriate.
+    $fallback_renderer = $this->container->get($fallback_renderer_id);
+    if (!is_a($fallback_renderer, TypedEntityRendererBase::class)) {
+      $message = 'The fallback renderer "' . get_class($fallback_renderer) . '" must extend "' . TypedEntityRendererBase::class . '" for backwards compatibility safety.';
       throw new UnexpectedValueException($message);
     }
   }
@@ -289,7 +314,7 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    *   The renderer.
    */
   protected function fallbackRenderer(): TypedEntityRendererInterface {
-    return $this->container->get(TypedEntityRendererBase::class);
+    return $this->fallbackRenderer;
   }
 
 }
