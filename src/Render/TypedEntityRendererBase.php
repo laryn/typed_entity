@@ -3,6 +3,7 @@
 namespace Drupal\typed_entity\Render;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
 class TypedEntityRendererBase implements TypedEntityRendererInterface {
@@ -28,8 +29,9 @@ class TypedEntityRendererBase implements TypedEntityRendererInterface {
    * TypedEntityRendererBase constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct($entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;
   }
 
