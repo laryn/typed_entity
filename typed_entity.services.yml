@@ -1,13 +1,17 @@
 services:
+
   Drupal\typed_entity\RepositoryManager:
-    arguments: ['@Drupal\typed_entity\RepositoryCollector']
-  Drupal\typed_entity\RepositoryCollector:
     arguments: ['@entity_type.manager']
     tags:
       -
         name: service_collector
         tag: typed_entity_repository
         call: addRepository
+
+  Drupal\typed_entity\RepositoryCollector:
+    # This service is left for backwards compatibility reasons.
+    parent: Drupal\typed_entity\RepositoryManager
+
   Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase:
     arguments: ['@service_container']
     public: false
@@ -18,5 +22,6 @@ services:
         bundle: ''
         wrapper_class: ''
         fallback_renderer: 'Drupal\typed_entity\Render\TypedEntityRendererBase'
+
   Drupal\typed_entity\Render\TypedEntityRendererBase:
     arguments: ['@entity_type.manager']

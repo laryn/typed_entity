@@ -10,6 +10,7 @@ use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
+use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\WrappedEntityVariants\ContextAwareInterface;
