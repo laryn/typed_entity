@@ -3,6 +3,7 @@
 namespace Drupal\typed_entity\TypedRepositories;
 
 use Drupal\Component\Assertion\Inspector;
+use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
@@ -299,6 +300,33 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
       ->loadMultiple(array_values($items));
     // Then wraps them all.
     return $this->wrapMultiple($entities);
+  }
+
+  /**
+   * Wraps all the available web segment.
+   *
+   * @param string $operation
+   *   The entity operation to use this for. Defaults to 'view'.
+   *
+   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface[]
+   *   The wrapped entities.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\typed_entity\InvalidValueException
+   */
+  public function wrapAll($operation = 'view'): array {
+    $bundle_key = $this->entityType->getKey('bundle');
+    $entities = $this->entityTypeManager
+      ->getStorage($this->entityType->id())
+      ->loadByProperties([$bundle_key => $this->bundle]);
+    $check_access = static function (EntityInterface $entity) use ($operation) {
+      return $entity instanceof AccessibleInterface
+        ? $entity->access($operation)
+        : TRUE;
+    };
+    $accessible_terms = array_filter($entities, $check_access);
+    return $this->wrapMultiple($accessible_terms);
   }
 
   /**
