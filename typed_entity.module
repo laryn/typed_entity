@@ -54,6 +54,18 @@ function typed_entity_preprocess(&$variables, $hook) {
 }
 
 /**
+ * A type hinted helper for .module files to get the repository manager.
+ *
+ * @return \Drupal\typed_entity\RepositoryManager
+ *   The repository manager.
+ */
+function typed_entity_repository_manager(): RepositoryManager {
+  $repository_manager = \Drupal::service(RepositoryManager::class);
+  assert($repository_manager instanceof RepositoryManager);
+  return $repository_manager;
+}
+
+/**
  * @param \Drupal\Core\Entity\EntityInterface $entity
  * @param array $build
  *
