@@ -125,19 +125,4 @@ class WrappedEntityBaseTest extends KernelTestBase {
     static::assertInstanceOf(Page::class, $reference);
   }
 
-  /**
-   * Test the toRenderable method.
-   *
-   * @covers ::toRenderable
-   */
-  public function testToRenderable() {
-    $node_view = $this->wrapper->toRenderable();
-    static::assertSame('default', $node_view['#view_mode']);
-    static::assertArrayHasKey('#node', $node_view);
-
-    $this->wrapper->setViewMode('teaser');
-    $node_view = $this->wrapper->toRenderable();
-    static::assertSame('teaser', $node_view['#view_mode']);
-  }
-
 }
