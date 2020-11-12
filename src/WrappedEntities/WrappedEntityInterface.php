@@ -50,8 +50,6 @@ interface WrappedEntityInterface {
    *
    * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface|null
    *   The owner.
-   *
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
   public function owner(): ?WrappedEntityInterface;
 

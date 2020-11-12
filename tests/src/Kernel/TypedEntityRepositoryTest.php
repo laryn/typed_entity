@@ -9,6 +9,7 @@ use Drupal\typed_entity\RepositoryCollector;
 use Drupal\typed_entity_test\WrappedEntities\Article;
 use Drupal\typed_entity_test\WrappedEntities\NewsArticle;
 use Drupal\typed_entity_test\WrappedEntities\Page;
+use PHPUnit\Framework\Error\Error;
 use UnexpectedValueException;
 
 /**
@@ -40,15 +41,15 @@ class TypedEntityRepositoryTest extends KernelTestBase {
 
     $repository = $this->getArticleRepository();
     $article_wrapper = $repository->wrap($article);
-    $this->assertInstanceOf(Article::class, $article_wrapper);
+    static::assertInstanceOf(Article::class, $article_wrapper);
 
     $article->field_node_type->value = 'News';
     $article->save();
     $article_wrapper = $repository->wrap($article);
-    $this->assertInstanceOf(NewsArticle::class, $article_wrapper);
+    static::assertInstanceOf(NewsArticle::class, $article_wrapper);
 
-    $this->expectException(InvalidValueException::class);
-    $repository->wrap($page);
+    $this->expectException(Error::class);
+    static::assertNull($repository->wrap($page));
   }
 
   /**
@@ -71,7 +72,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
 
     $article_wrappers = $repository->wrapMultiple($this->createArticles());
     foreach ($article_wrappers as $article_wrapper) {
-      $this->assertInstanceOf(Article::class, $article_wrapper);
+      static::assertInstanceOf(Article::class, $article_wrapper);
     }
   }
 
@@ -82,7 +83,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    */
   public function testId() {
     $repository = $this->getArticleRepository();
-    $this->assertSame('node:article', $repository->id());
+    static::assertSame('node:article', $repository->id());
   }
 
   /**
@@ -103,7 +104,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
     $page->save();
 
     $page_wrapper = $repository->wrap($page);
-    $this->assertInstanceOf(Page::class, $page_wrapper);
+    static::assertInstanceOf(Page::class, $page_wrapper);
 
     $this->expectException(UnexpectedValueException::class);
     $repository->init($entity_type, '', Page::class);
@@ -117,7 +118,6 @@ class TypedEntityRepositoryTest extends KernelTestBase {
   public function testGetQuery() {
     $repository = $this->getArticleRepository();
     $query = $repository->getQuery();
-    $this->assertInstanceOf(QueryInterface::class, $query);
 
     $this->createArticles();
     $page = Node::create([
@@ -126,8 +126,8 @@ class TypedEntityRepositoryTest extends KernelTestBase {
     ]);
     $page->save();
 
-    $this->assertSame('node', $query->getEntityTypeId());
-    $this->assertEquals(3, $query->count()->execute());
+    static::assertSame('node', $query->getEntityTypeId());
+    static::assertEquals(3, $query->count()->execute());
   }
 
 }

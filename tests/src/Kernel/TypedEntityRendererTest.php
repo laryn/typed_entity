@@ -84,8 +84,8 @@ class TypedEntityRendererTest extends KernelTestBase {
   public function testFallback(): void {
     $context = new TypedEntityRenderContext();
     $renderers = $this->pageRepository->rendererFactory($context);
-    $this->assertCount(1, $renderers);
-    $this->assertInstanceOf(Base::class, current($renderers));
+    static::assertCount(1, $renderers);
+    static::assertInstanceOf(Base::class, current($renderers));
   }
 
   /**
@@ -96,8 +96,8 @@ class TypedEntityRendererTest extends KernelTestBase {
   public function testRendererNegotiationViewMode(string $view_mode, string $expected_class): void {
     $context = new TypedEntityRenderContext(['view_mode' => $view_mode]);
     $renderers = $this->articleRepository->rendererFactory($context);
-    $this->assertCount(1, $renderers);
-    $this->assertInstanceOf($expected_class, current($renderers));
+    static::assertCount(1, $renderers);
+    static::assertInstanceOf($expected_class, current($renderers));
   }
 
   /**
@@ -123,8 +123,8 @@ class TypedEntityRendererTest extends KernelTestBase {
       'typed_entity_test.conditional_renderer' => $state,
     ]);
     $renderers = $this->articleRepository->rendererFactory($context);
-    $this->assertCount(1, $renderers);
-    $this->assertInstanceOf($expected_class, current($renderers));
+    static::assertCount(1, $renderers);
+    static::assertInstanceOf($expected_class, current($renderers));
   }
 
   /**

@@ -42,7 +42,6 @@ final class ArticleRepository extends TypedEntityRepositoryBase {
    *   The wrapped entities.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
   public function findByTags(array $tags): array {
     $items = $this->findItemsByTags($tags);

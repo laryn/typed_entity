@@ -11,13 +11,13 @@ use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
-use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\WrappedEntityVariants\ContextAwareInterface;
 use Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use UnexpectedValueException;
+use const E_USER_WARNING;
 
 /**
  * Base class all repositories should extend from.
@@ -101,12 +101,14 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function wrap(EntityInterface $entity): WrappedEntityInterface {
+  public function wrap(EntityInterface $entity): ?WrappedEntityInterface {
     // Validate that this entity can be wrapped.
     $can_be_wrapped = $this->entityType->id() === $entity->getEntityTypeId()
       && $this->bundle === $entity->bundle();
     if (!$can_be_wrapped) {
-      throw new InvalidValueException('Unable to wrap entity with this repository.');
+      $message = 'Unable to wrap entity with this repository.';
+      trigger_error($message, E_USER_WARNING);
+      return NULL;
     }
     $class = $this->negotiateVariant($entity);
     return call_user_func(
@@ -236,6 +238,8 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    *   The wrapper class for entities.
    * @param string $fallback_renderer_id
    *   The service ID for the fallback renderer.
+   *
+   * @throw \UnexpectedValueException;
    */
   private function validateArguments(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id): void {
     $bundle_info = $this->container
@@ -290,7 +294,6 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface[]
    *   The wrapped entities.
    *
-   * @throws \Drupal\typed_entity\InvalidValueException
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   protected function wrapMultipleById(array $items): array {
@@ -303,7 +306,10 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   }
 
   /**
-   * Wraps all the available web segment.
+   * Wraps all the entities for the repository.
+   *
+   * CAUTION: this method can have a performance impact depending on the number
+   * of entities to be loaded and wrapped.
    *
    * @param string $operation
    *   The entity operation to use this for. Defaults to 'view'.
@@ -313,7 +319,6 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
   public function wrapAll($operation = 'view'): array {
     $bundle_key = $this->entityType->getKey('bundle');
@@ -325,8 +330,8 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
         ? $entity->access($operation)
         : TRUE;
     };
-    $accessible_terms = array_filter($entities, $check_access);
-    return $this->wrapMultiple($accessible_terms);
+    $accessible_entities = array_filter($entities, $check_access);
+    return $this->wrapMultiple($accessible_entities);
   }
 
   /**

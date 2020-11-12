@@ -20,7 +20,9 @@ function typed_entity_example_node_view_alter(array &$build, EntityInterface $en
   }
   $repository_manager = \Drupal::service(RepositoryManager::class);
   assert($repository_manager instanceof RepositoryManager);
-  $repository = $repository_manager->repositoryFromEntity($entity);
+  if (!$repository = $repository_manager->repositoryFromEntity($entity)) {
+    return;
+  }
   assert($repository instanceof ArticleRepository);
   $articles = $repository->findByTags(['Vegetarian', 'heaLthy', 'Baking']);
   $build['related'] = [

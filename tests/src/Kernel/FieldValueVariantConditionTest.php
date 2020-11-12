@@ -24,10 +24,10 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    */
   public function testIsNegated() {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
-    $this->assertFalse($condition->isNegated());
+    static::assertFalse($condition->isNegated());
 
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class, TRUE);
-    $this->assertTrue($condition->isNegated());
+    static::assertTrue($condition->isNegated());
   }
 
   /**
@@ -45,11 +45,11 @@ class FieldValueVariantConditionTest extends KernelTestBase {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
 
     $condition->setContext('entity', $article);
-    $this->assertFalse($condition->evaluate());
+    static::assertFalse($condition->evaluate());
 
     $article->field_node_type->value = 'News';
     $article->save();
-    $this->assertTrue($condition->evaluate());
+    static::assertTrue($condition->evaluate());
   }
 
   /**
@@ -60,7 +60,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
   public function testSummary() {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
     $summary = 'Active when the <em class="placeholder">field_node_type</em> is <em class="placeholder">News</em>.';
-    $this->assertSame($condition->summary(), $summary);
+    static::assertSame($condition->summary(), $summary);
   }
 
   /**
@@ -70,7 +70,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    */
   public function testVariant() {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
-    $this->assertSame($condition->variant(), NewsArticle::class);
+    static::assertSame($condition->variant(), NewsArticle::class);
   }
 
   /**

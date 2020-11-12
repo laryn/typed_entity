@@ -7,6 +7,8 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
+use UnexpectedValueException;
+use const E_USER_WARNING;
 
 /**
  * Repository to wrap entities and negotiate specific repositories.
@@ -69,9 +71,18 @@ class RepositoryManager implements EntityWrapperInterface {
       return;
     }
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-    empty($bundle)
-      ? $this->addAllBundles($repository, $entity_type_id, $wrapper_class, $fallback_renderer)
-      : $repository->init($entity_type, $bundle, $wrapper_class, $fallback_renderer);
+    if (empty($bundle)) {
+      $this->addAllBundles($repository, $entity_type_id, $wrapper_class, $fallback_renderer);
+    }
+    else {
+      try {
+        $repository->init($entity_type, $bundle, $wrapper_class, $fallback_renderer);
+      }
+      catch (UnexpectedValueException $exception) {
+        trigger_error($exception->getMessage(), E_USER_WARNING);
+        return;
+      }
+    }
     $this->repositories[$repository->id()] = $repository;
   }
 
@@ -119,33 +130,25 @@ class RepositoryManager implements EntityWrapperInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to extract info for.
    *
-   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface
+   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface|null
    *   The repository for the entity.
-   *
-   * @throws \Drupal\typed_entity\RepositoryNotFoundException
-   *   When the repository was not found.
-   *
-   * @todo: The variant negotiation is still missing.
    */
-  public function repositoryFromEntity(EntityInterface $entity): TypedEntityRepositoryInterface {
+  public function repositoryFromEntity(EntityInterface $entity): ?TypedEntityRepositoryInterface {
     return $this->repository($entity->getEntityTypeId(), $entity->bundle());
   }
 
   /**
    * Gets the entity repository based on the entity information and the variant.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity to extract info for.
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $bundle
+   *   The bundle machine name.
    *
-   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface
+   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface|null
    *   The repository for the entity.
-   *
-   * @throws \Drupal\typed_entity\RepositoryNotFoundException
-   *   When the repository was not found.
-   *
-   * @todo: The variant negotiation is still missing.
    */
-  public function repository(string $entity_type_id, string $bundle = ''): TypedEntityRepositoryInterface {
+  public function repository(string $entity_type_id, string $bundle = ''): ?TypedEntityRepositoryInterface {
     $bundle = $bundle ?: $entity_type_id;
     $identifier = implode(
       TypedEntityRepositoryBase::SEPARATOR,
@@ -154,25 +157,27 @@ class RepositoryManager implements EntityWrapperInterface {
     $repository = $this->get($identifier);
     if ($repository === NULL) {
       $message = 'Repository with identifier "' . $identifier . '" not found';
-      throw new RepositoryNotFoundException($message);
+      trigger_error($message, E_USER_WARNING);
+      return NULL;
     }
     return $repository;
   }
 
   /**
    * {@inheritdoc}
-   *
-   * @throws \Drupal\typed_entity\RepositoryNotFoundException
    */
-  public function wrap(EntityInterface $entity): WrappedEntityInterface {
-    return $this->repositoryFromEntity($entity)->wrap($entity);
+  public function wrap(EntityInterface $entity): ?WrappedEntityInterface {
+    if (!$repository = $this->repositoryFromEntity($entity)) {
+      return NULL;
+    }
+    return $repository->wrap($entity);
   }
 
   /**
    * {@inheritdoc}
    */
   public function wrapMultiple(array $entities): array {
-    return array_map([$this, 'wrap'], $entities);
+    return array_filter(array_map([$this, 'wrap'], $entities));
   }
 
 }

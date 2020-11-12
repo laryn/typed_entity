@@ -16,12 +16,10 @@ interface EntityWrapperInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to wrap.
    *
-   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface
+   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface|null
    *   The wrapped entity.
-   *
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
-  public function wrap(EntityInterface $entity): WrappedEntityInterface;
+  public function wrap(EntityInterface $entity): ?WrappedEntityInterface;
 
   /**
    * Wraps an entities with business logic.
@@ -31,8 +29,6 @@ interface EntityWrapperInterface {
    *
    * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface[]
    *   The wrapped entities.
-   *
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
   public function wrapMultiple(array $entities): array;
 

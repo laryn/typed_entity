@@ -142,8 +142,6 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
    *
    * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface[]
    *   The wrapped referenced entities.
-   *
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
   public function wrapReferences(string $field_name): array {
     $references = [];
@@ -164,10 +162,8 @@ abstract class WrappedEntityBase implements WrappedEntityInterface, RenderableIn
    * @param string $field_name
    *   The name of the entity reference field.
    *
-   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface
+   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface|null
    *   The wrapped referenced entity.
-   *
-   * @throws \Drupal\typed_entity\InvalidValueException
    */
   public function wrapReference(string $field_name): ?WrappedEntityInterface {
     $target_entity = $this->getEntity()->{$field_name}->entity;

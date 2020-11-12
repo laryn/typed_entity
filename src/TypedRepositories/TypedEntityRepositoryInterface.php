@@ -7,6 +7,7 @@ use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\typed_entity\EntityWrapperInterface;
 use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
+use UnexpectedValueException;
 
 /**
  * Entity repository.
@@ -25,6 +26,8 @@ interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
    *   repository.
    * @param string $fallback_renderer_id
    *   The service ID of the fallback renderer.
+   *
+   * @throw \UnexpectedValueException
    */
   public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id = ''): void;
 

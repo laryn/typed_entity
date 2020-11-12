@@ -56,7 +56,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
    */
   public function testGetEntity() {
     $entity = $this->wrapper->getEntity();
-    $this->assertEquals($entity->id(), $this->node->id());
+    static::assertEquals($entity->id(), $this->node->id());
   }
 
   /**
@@ -65,7 +65,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
    * @covers ::label
    */
   public function testLabel() {
-    $this->assertSame($this->wrapper->label(), $this->node->label());
+    static::assertSame($this->wrapper->label(), $this->node->label());
   }
 
   /**
@@ -100,7 +100,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
     $wrapped_references = $this->wrapper->wrapReferences('field_related_pages');
 
     foreach ($wrapped_references as $reference) {
-      $this->assertInstanceOf(Page::class, $reference);
+      static::assertInstanceOf(Page::class, $reference);
     }
   }
 
@@ -110,7 +110,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
    * @covers ::wrapReference
    */
   public function testWrapReference() {
-    $this->assertNull($this->wrapper->wrapReference('field_related_pages'));
+    static::assertNull($this->wrapper->wrapReference('field_related_pages'));
 
     $page = Node::create([
       'type' => 'page',
@@ -122,7 +122,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
     $this->node->save();
 
     $reference = $this->wrapper->wrapReference('field_related_pages');
-    $this->assertInstanceOf(Page::class, $reference);
+    static::assertInstanceOf(Page::class, $reference);
   }
 
   /**
@@ -132,12 +132,12 @@ class WrappedEntityBaseTest extends KernelTestBase {
    */
   public function testToRenderable() {
     $node_view = $this->wrapper->toRenderable();
-    $this->assertSame('default', $node_view['#view_mode']);
-    $this->assertArrayHasKey('#node', $node_view);
+    static::assertSame('default', $node_view['#view_mode']);
+    static::assertArrayHasKey('#node', $node_view);
 
     $this->wrapper->setViewMode('teaser');
     $node_view = $this->wrapper->toRenderable();
-    $this->assertSame('teaser', $node_view['#view_mode']);
+    static::assertSame('teaser', $node_view['#view_mode']);
   }
 
 }

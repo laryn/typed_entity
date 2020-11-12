@@ -7,11 +7,10 @@
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
 use Drupal\typed_entity\RepositoryManager;
-use Drupal\typed_entity\RepositoryNotFoundException;
+use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
 /**
  * Implements hook_entity_view_alter().
@@ -21,10 +20,8 @@ function typed_entity_entity_view_alter(array &$build, EntityInterface $entity, 
     // Unable to find the entity.
     return;
   }
-  try {
-    [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $build);
-  }
-  catch (InvalidValueException | RepositoryNotFoundException $e) {
+  [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $build);
+  if (!is_array($renderers) || !$wrapped_entity instanceof WrappedEntityInterface) {
     return;
   }
   $build = array_reduce($renderers, static function (array $build, TypedEntityRendererInterface $renderer) use ($wrapped_entity, $display) {
@@ -41,10 +38,8 @@ function typed_entity_preprocess(&$variables, $hook) {
   if (!$entity instanceof EntityInterface) {
     return;
   }
-  try {
-    [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $variables['elements'] ?? []);
-  }
-  catch (InvalidValueException | RepositoryNotFoundException $e) {
+  [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $variables['elements'] ?? []);
+  if (!is_array($renderers) || !$wrapped_entity instanceof WrappedEntityInterface) {
     return;
   }
   $variables = array_reduce($renderers, static function (array $vars, TypedEntityRendererInterface $renderer) use ($wrapped_entity) {
@@ -70,13 +65,14 @@ function typed_entity_repository_manager(): RepositoryManager {
  * @param array $build
  *
  * @return array
- * @throws \Drupal\typed_entity\InvalidValueException
- * @throws \Drupal\typed_entity\RepositoryNotFoundException
  */
 function _typed_entity_find_renderers(EntityInterface $entity, array $build): array {
   $repository_manager = \Drupal::service(RepositoryManager::class);
   assert($repository_manager instanceof RepositoryManager);
   $repository = $repository_manager->repository($entity->getEntityTypeId(), $entity->bundle());
+  if (!$repository) {
+    return [NULL, NULL];
+  }
   $context = _typed_entity_build_render_context($build);
   $renderers = $repository->rendererFactory($context);
   $wrapped_entity = $repository->wrap($entity);
