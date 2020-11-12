@@ -60,7 +60,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
   public function testSummary() {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
     $summary = 'Active when the <em class="placeholder">field_node_type</em> is <em class="placeholder">News</em>.';
-    static::assertSame($condition->summary(), $summary);
+    static::assertSame($condition->summary()->__toString(), $summary);
   }
 
   /**

@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\typed_entity\InvalidValueException;
 
 /**
@@ -100,7 +101,7 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
   /**
    * {@inheritdoc}
    */
-  public function summary(): string {
+  public function summary(): TranslatableMarkup {
     return $this->t('Active when the %field is %value.', [
       '%field' => $this->fieldName,
       '%value' => $this->value,
