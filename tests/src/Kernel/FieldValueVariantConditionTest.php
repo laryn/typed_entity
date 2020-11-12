@@ -43,13 +43,17 @@ class FieldValueVariantConditionTest extends KernelTestBase {
     $article->save();
 
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
-
     $condition->setContext('entity', $article);
+    $empty_condition = new FieldValueVariantCondition('field_node_type', NULL, NewsArticle::class);
+    $empty_condition->setContext('entity', $article);
+
     static::assertFalse($condition->evaluate());
+    static::assertTrue($empty_condition->evaluate());
 
     $article->field_node_type->value = 'News';
     $article->save();
     static::assertTrue($condition->evaluate());
+    static::assertFalse($empty_condition->evaluate());
   }
 
   /**
@@ -78,7 +82,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    *
    * @covers ::validateContext
    */
-  public function validateContextNoEntity() {
+  public function testValidateContextNoEntity() {
     $this->createFooNodeType();
 
     $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
@@ -94,7 +98,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    *
    * @covers ::validateContext
    */
-  public function validateContextNoField() {
+  public function testValidateContextNoField() {
     $this->createFooNodeType();
     $node = Node::create([
       'type' => 'foo',

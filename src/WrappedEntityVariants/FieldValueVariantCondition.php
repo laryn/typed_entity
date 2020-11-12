@@ -81,6 +81,15 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
    * @SuppressWarnings(PHPMD.StaticAccess)
    */
   public function evaluate(): bool {
+    // If the value is explicitly set to NULL, use the
+    // EmptyFieldVariantCondition instead.
+    if ($this->value === NULL) {
+      $empty_condition = new EmptyFieldVariantCondition($this->fieldName, $this->variant, $this->isNegated);
+      foreach ($this->contexts as $name => $value) {
+        $empty_condition->setContext($name, $value);
+      }
+      return $empty_condition->evaluate();
+    }
     $this->validateContext();
     $entity = $this->getContext('entity');
     assert($entity instanceof FieldableEntityInterface);
