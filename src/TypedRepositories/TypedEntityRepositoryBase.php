@@ -17,7 +17,6 @@ use Drupal\typed_entity\WrappedEntityVariants\ContextAwareInterface;
 use Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use UnexpectedValueException;
-use const E_USER_WARNING;
 
 /**
  * Base class all repositories should extend from.
@@ -106,8 +105,6 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
     $can_be_wrapped = $this->entityType->id() === $entity->getEntityTypeId()
       && $this->bundle === $entity->bundle();
     if (!$can_be_wrapped) {
-      $message = 'Unable to wrap entity with this repository.';
-      trigger_error($message, E_USER_WARNING);
       return NULL;
     }
     $class = $this->negotiateVariant($entity);

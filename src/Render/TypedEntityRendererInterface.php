@@ -5,6 +5,9 @@ namespace Drupal\typed_entity\Render;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
+/**
+ * Renderers are classes that encapsulate buisiness logic rendering an entity.
+ */
 interface TypedEntityRendererInterface {
 
   /**

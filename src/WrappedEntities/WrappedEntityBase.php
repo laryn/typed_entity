@@ -4,7 +4,6 @@ namespace Drupal\typed_entity\WrappedEntities;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilderInterface;
-use Drupal\Core\Render\RenderableInterface;
 use Drupal\typed_entity\RepositoryManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 

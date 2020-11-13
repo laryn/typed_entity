@@ -7,7 +7,6 @@ use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
 use Drupal\typed_entity_test\TypedRepositories\ArticleRepository;
 use Drupal\typed_entity_test\WrappedEntities\Article;
-use PHPUnit\Framework\Error\Error;
 
 /**
  * Test the RepositoryManager class.
@@ -33,7 +32,6 @@ class RepositoryManagerTest extends KernelTestBase {
     $repository = $manager->repository('node', 'page');
     $this->assert($repository instanceof TypedEntityRepositoryBase);
 
-    $this->expectException(Error::class);
     static::assertNull($manager->repository('foo', 'bar'));
   }
 

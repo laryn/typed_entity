@@ -8,7 +8,6 @@ use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
 use UnexpectedValueException;
-use const E_USER_WARNING;
 
 /**
  * Repository to wrap entities and negotiate specific repositories.
@@ -79,7 +78,6 @@ class RepositoryManager implements EntityWrapperInterface {
         $repository->init($entity_type, $bundle, $wrapper_class, $fallback_renderer);
       }
       catch (UnexpectedValueException $exception) {
-        trigger_error($exception->getMessage(), E_USER_WARNING);
         return;
       }
     }
@@ -154,13 +152,7 @@ class RepositoryManager implements EntityWrapperInterface {
       TypedEntityRepositoryBase::SEPARATOR,
       array_filter([$entity_type_id, $bundle])
     );
-    $repository = $this->get($identifier);
-    if ($repository === NULL) {
-      $message = 'Repository with identifier "' . $identifier . '" not found';
-      trigger_error($message, E_USER_WARNING);
-      return NULL;
-    }
-    return $repository;
+    return $this->get($identifier);
   }
 
   /**

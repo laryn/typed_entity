@@ -7,7 +7,6 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\KernelTests\KernelTestBase as BaseTestsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
-use PHPUnit\Framework\Error\Error;
 
 /**
  * Base class with common functionality for typed_entity tests.

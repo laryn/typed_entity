@@ -2,14 +2,11 @@
 
 namespace Drupal\Tests\typed_entity\Kernel;
 
-use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\node\Entity\Node;
-use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\RepositoryCollector;
 use Drupal\typed_entity_test\WrappedEntities\Article;
 use Drupal\typed_entity_test\WrappedEntities\NewsArticle;
 use Drupal\typed_entity_test\WrappedEntities\Page;
-use PHPUnit\Framework\Error\Error;
 use UnexpectedValueException;
 
 /**
@@ -48,7 +45,6 @@ class TypedEntityRepositoryTest extends KernelTestBase {
     $article_wrapper = $repository->wrap($article);
     static::assertInstanceOf(NewsArticle::class, $article_wrapper);
 
-    $this->expectException(Error::class);
     static::assertNull($repository->wrap($page));
   }
 

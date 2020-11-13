@@ -7,7 +7,6 @@ use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\typed_entity\EntityWrapperInterface;
 use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
-use UnexpectedValueException;
 
 /**
  * Entity repository.

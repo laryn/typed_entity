@@ -6,6 +6,14 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
+/**
+ * The base renderer.
+ *
+ * Custom renderers should inherit from this to ensure backwards compatibility
+ * with future changes on TypedEntityRendererInterface.
+ *
+ * If nothing else is selected this might be used.
+ */
 class TypedEntityRendererBase implements TypedEntityRendererInterface {
 
   /**
