@@ -147,8 +147,9 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   protected function negotiateVariant(EntityInterface $entity): string {
     // Match the first variant condition found.
     foreach ($this->variantConditions as $variant_condition) {
-      assert($variant_condition instanceof ContextAwareInterface);
-      $variant_condition->setContext('entity', $entity);
+      if ($variant_condition instanceof ContextAwareInterface) {
+        $variant_condition->setContext('entity', $entity);
+      }
       assert($variant_condition instanceof VariantConditionInterface);
       try {
         $valid = $variant_condition->evaluate();

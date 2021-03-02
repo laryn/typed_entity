@@ -5,24 +5,15 @@ namespace Drupal\typed_entity\WrappedEntityVariants;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\typed_entity\InvalidValueException;
 
 /**
  * Configurable variant condition that checks for a given value in a field.
  */
-class FieldValueVariantCondition implements VariantConditionInterface, ContextAwareInterface {
+class FieldValueVariantCondition extends VariantConditionBase implements ContextAwareInterface {
 
   use ContextAwareTrait;
-  use StringTranslationTrait;
-
-  /**
-   * Inverse the result of the evaluation.
-   *
-   * @var bool
-   */
-  protected $isNegated = FALSE;
 
   /**
    * Name of the field that contains the data.
@@ -39,13 +30,6 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
   protected $value = NULL;
 
   /**
-   * The FQN of the wrapper class for the variant.
-   *
-   * @var string
-   */
-  protected $variant;
-
-  /**
    * FieldValueVariantCondition constructor.
    *
    * @param string $field_name
@@ -59,18 +43,10 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
    *
    * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
    */
-  public function __construct(string $field_name, $value, string $variant, bool $is_negated = FALSE) {
-    $this->isNegated = $is_negated;
+  public function __construct(string $field_name, $value, string $variant = '', bool $is_negated = FALSE) {
+    parent::__construct($variant, $is_negated);
     $this->fieldName = $field_name;
     $this->value = $value;
-    $this->variant = $variant;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isNegated(): bool {
-    return $this->isNegated;
   }
 
   /**
@@ -115,13 +91,6 @@ class FieldValueVariantCondition implements VariantConditionInterface, ContextAw
       '%field' => $this->fieldName,
       '%value' => $this->value,
     ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function variant(): string {
-    return $this->variant;
   }
 
   /**
