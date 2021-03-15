@@ -294,7 +294,7 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  protected function wrapMultipleById(array $items): array {
+  public function wrapMultipleById(array $items): array {
     // Load all the entities that we found.
     $entities = $this->entityTypeManager
       ->getStorage($this->entityType->id())
