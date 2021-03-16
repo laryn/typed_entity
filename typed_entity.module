@@ -49,6 +49,24 @@ function typed_entity_preprocess(&$variables, $hook) {
 }
 
 /**
+ * Implements hook_entity_display_build_alter().
+ */
+function typed_entity_entity_display_build_alter(&$build, $context) {
+  $entity = $context['entity'] ?? NULL;
+  if (!$entity instanceof EntityInterface) {
+    return;
+  }
+  [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $build);
+  if (!is_array($renderers) || !$wrapped_entity instanceof WrappedEntityInterface) {
+    return;
+  }
+  $build = array_reduce($renderers, static function (array $vars, TypedEntityRendererInterface $renderer) use ($wrapped_entity, $context) {
+    $renderer->displayBuildAlter($vars, $wrapped_entity, $context);
+    return $vars;
+  }, $build);
+}
+
+/**
  * A type hinted helper for .module files to get the repository manager.
  *
  * @return \Drupal\typed_entity\RepositoryManager
@@ -73,7 +91,7 @@ function _typed_entity_find_renderers(EntityInterface $entity, array $build): ar
   if (!$repository) {
     return [NULL, NULL];
   }
-  $context = _typed_entity_build_render_context($build);
+  $context = _typed_entity_build_render_context($build, $entity);
   $renderers = $repository->rendererFactory($context);
   $wrapped_entity = $repository->wrap($entity);
   return [$renderers, $wrapped_entity];
@@ -84,11 +102,13 @@ function _typed_entity_find_renderers(EntityInterface $entity, array $build): ar
  *
  * @param array $variables
  *   The variables array.
+ * @param \Drupal\Core\Entity\EntityInterface|null $entity
+ *   The entity.
  *
  * @return \Drupal\typed_entity\Render\TypedEntityRenderContext
  *   The render context.
  */
-function _typed_entity_build_render_context(array $variables): TypedEntityRenderContext {
+function _typed_entity_build_render_context(array $variables, EntityInterface $entity = NULL): TypedEntityRenderContext {
   // Get only the properties that start by a '#'.
   $context = new TypedEntityRenderContext();
   foreach ($variables as $key => $value) {
@@ -97,6 +117,9 @@ function _typed_entity_build_render_context(array $variables): TypedEntityRender
     }
     $name = substr($key, 1);
     $context[$name] = $value;
+  }
+  if ($entity && !$context->offsetExists('entity')) {
+    $context->offsetSet('entity', $entity);
   }
   return $context;
 }
