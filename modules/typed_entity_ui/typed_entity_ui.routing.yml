@@ -1,0 +1,15 @@
+typed_entity_ui.explore:
+  path: '/admin/config/development/typed-entity'
+  defaults:
+    _form: '\Drupal\typed_entity_ui\Form\ExploreForm'
+    _title: 'Explore'
+  requirements:
+    _permission: 'explore typed entity classes'
+
+typed_entity_ui.details:
+  path: '/admin/config/development/typed-entity/{typed_entity_id}'
+  defaults:
+    _controller: '\Drupal\typed_entity_ui\Controller\ExploreDetails'
+    _title_callback: '\Drupal\typed_entity_ui\Controller\ExploreDetails::title'
+  requirements:
+    _permission: 'explore typed entity classes'

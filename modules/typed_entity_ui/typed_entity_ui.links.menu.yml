@@ -1,0 +1,5 @@
+typed_entity_ui.explore:
+  title: 'Explore Typed Entity'
+  route_name: typed_entity_ui.explore
+  description: 'Explore the classes associated with each entity type and bundle pair.'
+  parent: system.admin_config_development

@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * Module implementation file.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function typed_entity_ui_theme($existing, $type, $theme, $path) {
+  return [
+    'php_class_info' => [
+      'variables' => [
+        'reflection' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Prepares variables for environment indicator element templates.
+ *
+ * Default template: environment-indicator.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #title, #value, #description, #required, #attributes.
+ */
+function template_preprocess_php_class_info(array &$variables) {
+  $reflection = $variables['reflection'];
+  assert($reflection instanceof ReflectionClass);
+  $variables['name'] = $reflection->getName();
+  $variables['parent'] = $reflection->getParentClass() ? $reflection->getParentClass()
+    ->getName() : '';
+  $variables['interfaces'] = [
+    '#title' => t('Interfaces'),
+    '#theme' => 'item_list',
+    '#items' => array_map(function (string $interface) {
+      return [
+        '#type' => 'html_tag',
+        '#tag' => 'code',
+        '#value' => $interface,
+        '#attributes' => ['class' => ['className']],
+      ];
+    }, array_keys($reflection->getInterfaces())),
+  ];
+  $variables['doc_comment'] = $reflection->getDocComment();
+  $variables['attributes'] = ['class' => ['php-class-info']];
+}

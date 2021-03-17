@@ -3,4 +3,4 @@ description: An example implementation of the typed entity strategy.
 type: module
 dependencies:
   - typed_entity
-core: 8.x
+core_version_requirement: ^8 || ^9
