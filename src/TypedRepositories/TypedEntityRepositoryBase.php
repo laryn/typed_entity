@@ -208,7 +208,7 @@ class TypedEntityRepositoryBase extends PluginBase implements TypedEntityReposit
     $wrappers = $plugin_definition['wrappers'] ?? NULL;
     if ($wrappers instanceof ClassWithVariantsInterface) {
       // Ensure the wrapper class exists.
-      if (!$wrappers->getFallback()) {
+      if (!$wrappers->getFallback(WrappedEntityBase::class)) {
         throw new \UnexpectedValueException('The wrapper fallback does not exist.');
       }
     }

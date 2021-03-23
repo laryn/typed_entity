@@ -3,3 +3,8 @@ php_class_info:
     theme:
       css/typed_entity_ui.php_class_info.css: {}
 
+class_with_variants:
+  css:
+    theme:
+      css/typed_entity_ui.class_with_variants.css: {}
+

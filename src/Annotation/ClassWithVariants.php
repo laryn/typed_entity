@@ -34,27 +34,50 @@ class ClassWithVariants extends AnnotationBase implements ClassWithVariantsInter
   }
 
   /**
-   * {@inheritdoc}
+   * Get the fallback class, if any.
+   *
+   * @param string $base_class
+   *   A FQN for a base class the fallback should extend. Empty if none needed.
+   *
+   * @return string
+   *   The FQN.
    */
-  public function getFallback(): ?string {
-    return class_exists($this->fallback) ? $this->fallback : NULL;
+  public function getFallback(string $base_class = ''): ?string {
+    if (!class_exists($this->fallback)) {
+      return NULL;
+    }
+    if (empty($base_class)) {
+      return $this->fallback;
+    }
+    return is_a($this->fallback, $base_class, TRUE) ? $this->fallback : NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getVariants(): array {
-    // Only consider the variants implementing the VariantInterface.
-    return array_filter($this->variants, function (string $variant_class): bool {
-      return class_exists($variant_class) && in_array(VariantInterface::class, class_implements($variant_class) ?: []);
-    });
+  public function getVariants(string $base_class = ''): array {
+    // Only consider the variants implementing the VariantInterface, and
+    // extending the (optional) base class.
+    return array_filter(
+      $this->variants,
+      function (string $variant_class) use ($base_class): bool {
+        if (!class_exists($variant_class)) {
+          return FALSE;
+        }
+        $interfaces = class_implements($variant_class) ?: [];
+        if (!in_array(VariantInterface::class, $interfaces)) {
+          return FALSE;
+        }
+        return empty($base_class) ? TRUE : is_a($variant_class, $base_class, TRUE);
+      }
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function negotiateVariant(TypedEntityContext $context = NULL, string $base_class = ''): ?string {
-    $variants = $this->getVariants();
+    $variants = $this->getVariants($base_class);
     // If there is a base class to further restrict the variants apply it now.
     if (!empty($base_class) && class_exists($base_class)) {
       $variants = array_filter(
@@ -74,7 +97,7 @@ class ClassWithVariants extends AnnotationBase implements ClassWithVariantsInter
       },
       ''
     );
-    return $variant ?: $this->getFallback();
+    return $variant ?: $this->getFallback($base_class);
   }
 
 }

@@ -3,12 +3,15 @@
 namespace Drupal\typed_entity_ui\Controller;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
+use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -94,22 +97,56 @@ class ExploreDetails extends ControllerBase {
    *   The render array.
    */
   public function __invoke(string $typed_entity_id): array {
-    [$entity_type_id, $bundle] = explode('.', $typed_entity_id);
+    $bundle = '';
+    $entity_type_id = $typed_entity_id;
+    if (strpos($typed_entity_id, '.') !== FALSE) {
+      [$entity_type_id, $bundle] = explode('.', $typed_entity_id, 2);
+    }
     $repository = $this->repositoryManager->repository($entity_type_id, $bundle ?? '');
-
     if (!$repository instanceof TypedEntityRepositoryInterface) {
       return $this->getNotFoundOutput($typed_entity_id);
     }
+    assert($repository instanceof PluginInspectionInterface);
+    $definition = $repository->getPluginDefinition();
+    $wrappers = $definition['wrappers'] ?? NULL;
+    $renderers = $definition['renderers'] ?? NULL;
+    $description = $definition['description'] ?? NULL;
+
     $reflection_repo = new \ReflectionClass($repository);
     return [
       [
         '#type' => 'html_tag',
         '#tag' => 'h2',
-        '#value' => $this->t('Typed Entity Repository'),
+        '#value' => $this->t('Typed Repository'),
+      ],
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $description,
       ],
       [
         '#theme' => 'php_class_info',
         '#reflection' => $reflection_repo,
+      ],
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'h3',
+        '#value' => $this->t('Entity wrappers'),
+      ],
+      [
+        '#theme' => 'class_with_variants',
+        '#object' => $wrappers,
+        '#base_class' => WrappedEntityBase::class,
+      ],
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'h3',
+        '#value' => $this->t('Entity renderers'),
+      ],
+      [
+        '#theme' => 'class_with_variants',
+        '#object' => $renderers,
+        '#base_class' => TypedEntityRendererBase::class,
       ],
     ];
   }
@@ -124,9 +161,15 @@ class ExploreDetails extends ControllerBase {
    *   The labels.
    */
   protected function getLabels(string $typed_entity_id): array {
-    [$entity_type_id, $bundle] = explode('.', $typed_entity_id);
+    $bundle = '';
+    $entity_type_id = $typed_entity_id;
+    if (strpos($typed_entity_id, '.') !== FALSE) {
+      [$entity_type_id, $bundle] = explode('.', $typed_entity_id, 2);
+    }
     try {
-      $entity_type_label = $this->entityTypeManager->getDefinition($entity_type_id)->getLabel();
+      $entity_type_label = $this->entityTypeManager
+        ->getDefinition($entity_type_id)
+        ->getLabel();
     }
     catch (PluginNotFoundException $exception) {
       return [];
@@ -135,7 +178,7 @@ class ExploreDetails extends ControllerBase {
       $bundle_label = $this->bundleInfo->getBundleInfo($entity_type_id)[$bundle]['label'] ?? '';
       return [$entity_type_label, $bundle_label];
     }
-    return [$entity_type_label];
+    return [$entity_type_label, NULL];
   }
 
   /**
