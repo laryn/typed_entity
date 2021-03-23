@@ -5,7 +5,7 @@ namespace Drupal\typed_entity_example\WrappedEntities;
 use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
-use Drupal\typed_entity_example\Plugin\TypedEntityRepository\ArticleRepository;
+use Drupal\typed_entity_example\Plugin\TypedRepositories\ArticleRepository;
 
 /**
  * The wrapped entity for the article content type tagged with Baking.

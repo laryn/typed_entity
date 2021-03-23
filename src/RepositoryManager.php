@@ -5,9 +5,9 @@ namespace Drupal\typed_entity;
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 
 /**
  * Repository to wrap entities and negotiate specific repositories.
@@ -24,7 +24,7 @@ class RepositoryManager implements EntityWrapperInterface {
   /**
    * The plugin manager.
    *
-   * @var \Drupal\typed_entity\TypedEntityRepositoryPluginManager
+   * @var \Drupal\typed_entity\TypedRepositoryPluginManager
    */
   private $pluginManager;
 
@@ -33,10 +33,10 @@ class RepositoryManager implements EntityWrapperInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\typed_entity\TypedEntityRepositoryPluginManager $plugin_manager
+   * @param \Drupal\typed_entity\TypedRepositoryPluginManager $plugin_manager
    *   The plugin manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TypedEntityRepositoryPluginManager $plugin_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TypedRepositoryPluginManager $plugin_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->pluginManager = $plugin_manager;
   }
@@ -47,17 +47,17 @@ class RepositoryManager implements EntityWrapperInterface {
    * @param string $repository_id
    *   The repository identifier.
    *
-   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface|null
+   * @return \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface|null
    *   The repository.
    */
-  public function get(string $repository_id): ?TypedEntityRepositoryInterface {
+  public function get(string $repository_id): ?TypedRepositoryInterface {
     try {
       $instance = $this->pluginManager->createInstance($repository_id, []);
     }
     catch (PluginException $exception) {
       return NULL;
     }
-    return $instance instanceof TypedEntityRepositoryInterface
+    return $instance instanceof TypedRepositoryInterface
       ? $instance
       : NULL;
   }
@@ -68,10 +68,10 @@ class RepositoryManager implements EntityWrapperInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to extract info for.
    *
-   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface|null
+   * @return \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface|null
    *   The repository for the entity.
    */
-  public function repositoryFromEntity(EntityInterface $entity): ?TypedEntityRepositoryInterface {
+  public function repositoryFromEntity(EntityInterface $entity): ?TypedRepositoryInterface {
     return $this->repository($entity->getEntityTypeId(), $entity->bundle());
   }
 
@@ -83,13 +83,12 @@ class RepositoryManager implements EntityWrapperInterface {
    * @param string $bundle
    *   The bundle machine name.
    *
-   * @return \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface|null
+   * @return \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface|null
    *   The repository for the entity.
    */
-  public function repository(string $entity_type_id, string $bundle = ''): ?TypedEntityRepositoryInterface {
-    $bundle = $bundle ?: $entity_type_id;
+  public function repository(string $entity_type_id, string $bundle = ''): ?TypedRepositoryInterface {
     $identifier = implode(
-      TypedEntityRepositoryBase::SEPARATOR,
+      TypedRepositoryBase::SEPARATOR,
       array_filter([$entity_type_id, $bundle])
     );
     return $this->get($identifier);

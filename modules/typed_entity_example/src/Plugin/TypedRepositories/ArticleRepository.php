@@ -1,14 +1,14 @@
 <?php
 
-namespace Drupal\typed_entity_example\Plugin\TypedEntityRepository;
+namespace Drupal\typed_entity_example\Plugin\TypedRepositories;
 
 use Drupal\Core\Entity\Query\ConditionInterface;
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 
 /**
  * The repository for articles.
  *
- * @TypedEntityRepository(
+ * @TypedRepository(
  *   entity_type_id = "node",
  *   bundle = "article",
  *   wrappers = @ClassWithVariants(
@@ -25,7 +25,7 @@ use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
  *   description = @Translation("Repository that holds business logic applicable to all articles.")
  * )
  */
-final class ArticleRepository extends TypedEntityRepositoryBase {
+final class ArticleRepository extends TypedRepositoryBase {
 
   /**
    * The field that contains the data about the article tags.

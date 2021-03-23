@@ -9,7 +9,7 @@ use Drupal\Core\Plugin\DefaultPluginManager;
 /**
  * TypedEntityRepository plugin manager.
  */
-class TypedEntityRepositoryPluginManager extends DefaultPluginManager {
+class TypedRepositoryPluginManager extends DefaultPluginManager {
 
   /**
    * Constructs TypedEntityRepositoryPluginManager object.
@@ -24,14 +24,14 @@ class TypedEntityRepositoryPluginManager extends DefaultPluginManager {
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
     parent::__construct(
-      'Plugin/TypedEntityRepository',
+      'Plugin/TypedRepositories',
       $namespaces,
       $module_handler,
-      'Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface',
-      'Drupal\typed_entity\Annotation\TypedEntityRepository'
+      'Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface',
+      'Drupal\typed_entity\Annotation\TypedRepository'
     );
-    $this->alterInfo('typed_entity_repository_info');
-    $this->setCacheBackend($cache_backend, 'typed_entity_repository_plugins');
+    $this->alterInfo('typed_repository_info');
+    $this->setCacheBackend($cache_backend, 'typed_repository_plugins');
   }
 
 }

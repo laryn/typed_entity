@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\typed_entity_test\Plugin\TypedEntityRepository;
+namespace Drupal\typed_entity_test\Plugin\TypedRepositories;
 
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 
 /**
  * The repository for articles.
  *
- * @TypedEntityRepository(
+ * @TypedRepository(
  *   entity_type_id = "node",
  *   bundle = "page",
  *   wrappers = @ClassWithVariants(
@@ -18,4 +18,4 @@ use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
  *   )
  * )
  */
-final class PageRepository extends TypedEntityRepositoryBase {}
+final class PageRepository extends TypedRepositoryBase {}

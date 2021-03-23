@@ -10,7 +10,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\RepositoryManager;
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -103,7 +103,7 @@ class ExploreDetails extends ControllerBase {
       [$entity_type_id, $bundle] = explode('.', $typed_entity_id, 2);
     }
     $repository = $this->repositoryManager->repository($entity_type_id, $bundle ?? '');
-    if (!$repository instanceof TypedEntityRepositoryInterface) {
+    if (!$repository instanceof TypedRepositoryInterface) {
       return $this->getNotFoundOutput($typed_entity_id);
     }
     assert($repository instanceof PluginInspectionInterface);

@@ -3,14 +3,14 @@
 namespace Drupal\typed_entity\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 
 /**
  * Defines typed_entity_repository annotation object.
  *
  * @Annotation
  */
-class TypedEntityRepository extends Plugin {
+class TypedRepository extends Plugin {
 
   /**
    * The entity type ID.
@@ -56,7 +56,7 @@ class TypedEntityRepository extends Plugin {
    */
   public function getId() {
     return implode(
-      TypedEntityRepositoryInterface::SEPARATOR,
+      TypedRepositoryInterface::SEPARATOR,
       array_filter([
         $this->definition['entity_type_id'] ?? NULL,
         $this->definition['bundle'] ?? NULL,

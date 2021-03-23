@@ -4,8 +4,8 @@ namespace Drupal\Tests\typed_entity\Kernel;
 
 use Drupal\node\Entity\Node;
 use Drupal\typed_entity\RepositoryManager;
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
-use Drupal\typed_entity_test\Plugin\TypedEntityRepository\ArticleRepository;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
+use Drupal\typed_entity_test\Plugin\TypedRepositories\ArticleRepository;
 use Drupal\typed_entity_test\WrappedEntities\Article;
 
 /**
@@ -30,7 +30,7 @@ class RepositoryManagerTest extends KernelTestBase {
     $this->assert($repository instanceof ArticleRepository);
 
     $repository = $manager->repository('node', 'page');
-    $this->assert($repository instanceof TypedEntityRepositoryBase);
+    $this->assert($repository instanceof TypedRepositoryBase);
 
     static::assertNull($manager->repository('foo', 'bar'));
   }

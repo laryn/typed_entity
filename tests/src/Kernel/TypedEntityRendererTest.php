@@ -44,7 +44,7 @@ class TypedEntityRendererTest extends KernelTestBase {
   /**
    * A test entity wrapper.
    *
-   * @var \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface
+   * @var \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface
    */
   private $pageRepository;
 

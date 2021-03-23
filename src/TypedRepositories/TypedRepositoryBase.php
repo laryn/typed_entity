@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Base class all repositories should extend from.
  */
-class TypedEntityRepositoryBase extends PluginBase implements TypedEntityRepositoryInterface, ContainerFactoryPluginInterface {
+class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface, ContainerFactoryPluginInterface {
 
   /**
    * The entity type manager.

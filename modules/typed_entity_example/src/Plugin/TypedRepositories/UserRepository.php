@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\typed_entity_example\TypedRepositories;
+namespace Drupal\typed_entity_example\Plugin\TypedRepositories;
 
-use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 
 /**
  * The repository for articles.
  *
- * @TypedEntityRepository(
+ * @TypedRepository(
  *   entity_type_id = "user",
  *   wrappers = @ClassWithVariants(
  *     fallback = "Drupal\typed_entity_example\WrappedEntities\User",
@@ -15,4 +15,4 @@ use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
  *   description = @Translation("Repository that holds business logic applicable to all users.")
  * )
  */
-final class UserRepository extends TypedEntityRepositoryBase {}
+final class UserRepository extends TypedRepositoryBase {}

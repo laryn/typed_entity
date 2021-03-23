@@ -10,7 +10,7 @@ use Drupal\typed_entity_test\WrappedEntities\NewsArticle;
 /**
  * Test the TypedEntityRepositoryBase class.
  *
- * @coversDefaultClass \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase
+ * @coversDefaultClass \Drupal\typed_entity\TypedRepositories\TypedRepositoryBase
  *
  * @group typed_entity
  */

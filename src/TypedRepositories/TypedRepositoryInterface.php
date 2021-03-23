@@ -11,7 +11,7 @@ use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 /**
  * Entity repository.
  */
-interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
+interface TypedRepositoryInterface extends EntityWrapperInterface {
 
   /**
    * The separator between the entity type ID and the bundle name.

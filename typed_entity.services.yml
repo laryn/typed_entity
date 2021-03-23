@@ -3,20 +3,6 @@ services:
   Drupal\typed_entity\RepositoryManager:
     arguments: ['@entity_type.manager', '@plugin.manager.typed_entity_repository']
 
-  Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase:
-    arguments: ['@service_container']
-    public: false
-    tags:
-      -
-        name: typed_entity_repository
-        entity_type_id: ''
-        bundle: ''
-        wrapper_class: ''
-        fallback_renderer: 'Drupal\typed_entity\Render\TypedEntityRendererBase'
-
-  Drupal\typed_entity\Render\TypedEntityRendererBase:
-    arguments: ['@entity_type.manager']
-
   plugin.manager.typed_entity_repository:
-    class: Drupal\typed_entity\TypedEntityRepositoryPluginManager
+    class: Drupal\typed_entity\TypedRepositoryPluginManager
     parent: default_plugin_manager
