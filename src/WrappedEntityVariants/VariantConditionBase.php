@@ -3,6 +3,7 @@
 namespace Drupal\typed_entity\WrappedEntityVariants;
 
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\typed_entity\TypedEntityContext;
 
 /**
  * Configurable variant condition that checks for a given value in a field.
@@ -19,25 +20,25 @@ abstract class VariantConditionBase implements VariantConditionInterface {
   protected $isNegated = FALSE;
 
   /**
-   * The FQN of the wrapper class for the variant.
+   * The context.
    *
-   * @var string
+   * @var \Drupal\typed_entity\TypedEntityContext
    */
-  protected $variant;
+  protected $context;
 
   /**
    * VariantConditionBase constructor.
    *
-   * @param string $variant
-   *   The FQN of the wrapper class for the variant.
+   * @param \Drupal\typed_entity\TypedEntityContext|null $context
+   *   The context.
    * @param bool $is_negated
    *   Inverse the result of the evaluation.
    *
    * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
    */
-  public function __construct(string $variant = '', bool $is_negated = FALSE) {
+  public function __construct(TypedEntityContext $context = NULL, bool $is_negated = FALSE) {
     $this->isNegated = $is_negated;
-    $this->variant = $variant;
+    $this->context = $context ?: new TypedEntityContext();
   }
 
   /**
@@ -45,13 +46,6 @@ abstract class VariantConditionBase implements VariantConditionInterface {
    */
   public function isNegated(): bool {
     return $this->isNegated;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function variant(): string {
-    return $this->variant;
   }
 
 }

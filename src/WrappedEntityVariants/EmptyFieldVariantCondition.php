@@ -4,6 +4,7 @@ namespace Drupal\typed_entity\WrappedEntityVariants;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\typed_entity\TypedEntityContext;
 
 /**
  * Configurable variant condition that checks whether a field is empty.
@@ -15,15 +16,15 @@ class EmptyFieldVariantCondition extends FieldValueVariantCondition {
    *
    * @param string $field_name
    *   Name of the field that contains the data.
-   * @param string $variant
-   *   The FQN of the wrapper class for the variant.
+   * @param \Drupal\typed_entity\TypedEntityContext $context
+   *   The context.
    * @param bool $is_negated
    *   Inverse the result of the evaluation.
    *
    * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
    */
-  public function __construct(string $field_name, string $variant, bool $is_negated = FALSE) {
-    parent::__construct($field_name, NULL, $variant, $is_negated);
+  public function __construct(string $field_name, TypedEntityContext $context, bool $is_negated = FALSE) {
+    parent::__construct($field_name, NULL, $context, $is_negated);
   }
 
   /**
@@ -31,7 +32,7 @@ class EmptyFieldVariantCondition extends FieldValueVariantCondition {
    */
   public function evaluate(): bool {
     $this->validateContext();
-    $entity = $this->getContext('entity');
+    $entity = $this->context->offsetGet('entity');
     assert($entity instanceof FieldableEntityInterface);
     $is_empty = $entity->get($this->fieldName)->isEmpty();
     return $this->isNegated() ? !$is_empty : $is_empty;

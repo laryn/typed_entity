@@ -36,11 +36,10 @@ interface VariantConditionInterface {
   public function summary(): TranslatableMarkup;
 
   /**
-   * Gets the FQN of the class for the wrapped entity variant.
+   * Validates the context.
    *
-   * @return string
-   *   The variant class.
+   * @throws \Drupal\typed_entity\InvalidValueException
    */
-  public function variant(): string;
+  public function validateContext(): void;
 
 }

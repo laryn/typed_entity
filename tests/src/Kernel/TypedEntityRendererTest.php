@@ -4,9 +4,8 @@ namespace Drupal\Tests\typed_entity\Kernel;
 
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
-use Drupal\typed_entity\Render\TypedEntityRenderContext;
+use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
-use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity_test\Render\Article\ConditionalRenderer;
 use Drupal\typed_entity_test\Render\Article\Teaser;
 use Drupal\typed_entity_test\Render\Page\Base;
@@ -65,7 +64,7 @@ class TypedEntityRendererTest extends KernelTestBase {
       'uid' => User::load(1),
     ]);
     $this->article->save();
-    $this->articleRepository = \Drupal::service(RepositoryManager::class)
+    $this->articleRepository = typed_entity_repository_manager()
       ->repositoryFromEntity($this->article);
 
     $this->page = Node::create([
@@ -74,7 +73,7 @@ class TypedEntityRendererTest extends KernelTestBase {
       'uid' => User::load(1),
     ]);
     $this->article->save();
-    $this->pageRepository = \Drupal::service(RepositoryManager::class)
+    $this->pageRepository = typed_entity_repository_manager()
       ->repositoryFromEntity($this->page);
   }
 
@@ -82,10 +81,9 @@ class TypedEntityRendererTest extends KernelTestBase {
    * Tests the fallback functionality.
    */
   public function testFallback(): void {
-    $context = new TypedEntityRenderContext();
-    $renderers = $this->pageRepository->rendererFactory($context);
-    static::assertCount(1, $renderers);
-    static::assertInstanceOf(Base::class, current($renderers));
+    $context = new TypedEntityContext();
+    $renderer = $this->pageRepository->rendererFactory($context);
+    static::assertInstanceOf(Base::class, $renderer);
   }
 
   /**
@@ -94,10 +92,9 @@ class TypedEntityRendererTest extends KernelTestBase {
    * @dataProvider rendererNegotiationViewModeDataProvider
    */
   public function testRendererNegotiationViewMode(string $view_mode, string $expected_class): void {
-    $context = new TypedEntityRenderContext(['view_mode' => $view_mode]);
-    $renderers = $this->articleRepository->rendererFactory($context);
-    static::assertCount(1, $renderers);
-    static::assertInstanceOf($expected_class, current($renderers));
+    $context = new TypedEntityContext(['view_mode' => $view_mode]);
+    $renderer = $this->articleRepository->rendererFactory($context);
+    static::assertInstanceOf($expected_class, $renderer);
   }
 
   /**
@@ -119,12 +116,11 @@ class TypedEntityRendererTest extends KernelTestBase {
    * @dataProvider rendererNegotiationStateDataProvider
    */
   public function testRendererNegotiationState(bool $state, string $expected_class): void {
-    $context = new TypedEntityRenderContext([
+    $context = new TypedEntityContext([
       'typed_entity_test.conditional_renderer' => $state,
     ]);
-    $renderers = $this->articleRepository->rendererFactory($context);
-    static::assertCount(1, $renderers);
-    static::assertInstanceOf($expected_class, current($renderers));
+    $renderer = $this->articleRepository->rendererFactory($context);
+    static::assertInstanceOf($expected_class, $renderer);
   }
 
   /**

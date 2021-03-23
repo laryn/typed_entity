@@ -4,7 +4,9 @@ namespace Drupal\typed_entity\Render;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * The base renderer.
@@ -45,10 +47,17 @@ class TypedEntityRendererBase implements TypedEntityRendererInterface {
 
   /**
    * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('entity_type.manager'));
+  }
+
+  /**
+   * {@inheritdoc}
    *
    * By default render the entity normally.
    */
-  public function build(WrappedEntityInterface $wrapped_entity, TypedEntityRenderContext $context): array {
+  public function build(WrappedEntityInterface $wrapped_entity, TypedEntityContext $context): array {
     $entity = $wrapped_entity->getEntity();
     $view_builder = $this->entityTypeManager->getViewBuilder($entity->getEntityTypeId());
     return $view_builder->view($entity, $context['view_mode']);
@@ -80,7 +89,7 @@ class TypedEntityRendererBase implements TypedEntityRendererInterface {
    *
    * By default match based on the declared view mode.
    */
-  public static function applies(TypedEntityRenderContext $context): bool {
+  public static function applies(TypedEntityContext $context): bool {
     $view_mode = $context['view_mode'] ?? NULL;
     return $view_mode === static::VIEW_MODE;
   }

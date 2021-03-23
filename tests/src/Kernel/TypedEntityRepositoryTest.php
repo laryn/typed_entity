@@ -3,11 +3,9 @@
 namespace Drupal\Tests\typed_entity\Kernel;
 
 use Drupal\node\Entity\Node;
-use Drupal\typed_entity\RepositoryCollector;
+use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity_test\WrappedEntities\Article;
 use Drupal\typed_entity_test\WrappedEntities\NewsArticle;
-use Drupal\typed_entity_test\WrappedEntities\Page;
-use UnexpectedValueException;
 
 /**
  * Test the TypedEntityRepositoryBase class.
@@ -49,11 +47,11 @@ class TypedEntityRepositoryTest extends KernelTestBase {
   }
 
   /**
-   * Get the ArticleRepository from the RepositoryCollector.
+   * Get the ArticleRepository from the RepositoryManager.
    */
   private function getArticleRepository() {
-    $collector = \Drupal::service(RepositoryCollector::class);
-    assert($collector instanceof RepositoryCollector);
+    $collector = typed_entity_repository_manager();
+    assert($collector instanceof RepositoryManager);
 
     return $collector->get('node:article');
   }
@@ -80,30 +78,6 @@ class TypedEntityRepositoryTest extends KernelTestBase {
   public function testId() {
     $repository = $this->getArticleRepository();
     static::assertSame('node:article', $repository->id());
-  }
-
-  /**
-   * Test the init() method.
-   *
-   * @covers ::init
-   */
-  public function testInit() {
-    $repository = $this->getArticleRepository();
-
-    $entity_type = \Drupal::entityTypeManager()->getDefinition('node');
-    $repository->init($entity_type, 'page', Page::class);
-
-    $page = Node::create([
-      'type' => 'page',
-      'title' => $this->randomMachineName(),
-    ]);
-    $page->save();
-
-    $page_wrapper = $repository->wrap($page);
-    static::assertInstanceOf(Page::class, $page_wrapper);
-
-    $this->expectException(UnexpectedValueException::class);
-    $repository->init($entity_type, '', Page::class);
   }
 
   /**

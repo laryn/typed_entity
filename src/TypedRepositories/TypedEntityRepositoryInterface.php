@@ -2,11 +2,11 @@
 
 namespace Drupal\typed_entity\TypedRepositories;
 
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\typed_entity\EntityWrapperInterface;
-use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
+use Drupal\typed_entity\TypedEntityContext;
+use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
 /**
  * Entity repository.
@@ -14,21 +14,11 @@ use Drupal\typed_entity\Render\TypedEntityRendererInterface;
 interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
 
   /**
-   * Initialize the repository with the parameters in the service container.
+   * The separator between the entity type ID and the bundle name.
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type for this repository.
-   * @param string $bundle
-   *   The bundle name.
-   * @param string $wrapper_class
-   *   The class to instantiate when creating wrapped entities using this
-   *   repository.
-   * @param string $fallback_renderer_id
-   *   The service ID of the fallback renderer.
-   *
-   * @throw \UnexpectedValueException
+   * @var string
    */
-  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id = ''): void;
+  const SEPARATOR = ':';
 
   /**
    * Gets a query to start finding items.
@@ -51,25 +41,31 @@ interface TypedEntityRepositoryInterface extends EntityWrapperInterface {
   public function id(): string;
 
   /**
+   * Gets the wrapper for the current context.
+   *
+   * Override this method in your repository for more nuanced rules on when to
+   * use a wrapper or another.
+   *
+   * @param \Drupal\typed_entity\TypedEntityContext $context
+   *   The context used for render.
+   *
+   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface|null
+   *   The first renderer that applies.
+   */
+  public function wrapperFactory(TypedEntityContext $context): ?WrappedEntityInterface;
+
+  /**
    * Gets the renderer for the current context.
    *
    * Override this method in your repository for more nuanced rules on when to
    * use a renderer or another.
    *
-   * @param \Drupal\typed_entity\Render\TypedEntityRenderContext $context
+   * @param \Drupal\typed_entity\TypedEntityContext $context
    *   The context used for render.
    *
-   * @return \Drupal\typed_entity\Render\TypedEntityRendererInterface[]
-   *   All the renderers that might apply.
+   * @return \Drupal\typed_entity\Render\TypedEntityRendererInterface|null
+   *   The first renderer that applies.
    */
-  public function rendererFactory(TypedEntityRenderContext $context): array;
-
-  /**
-   * Adds a renderer.
-   *
-   * @param \Drupal\typed_entity\Render\TypedEntityRendererInterface $renderer
-   *   The renderer.
-   */
-  public function addRenderer(TypedEntityRendererInterface $renderer): void;
+  public function rendererFactory(TypedEntityContext $context): ?TypedEntityRendererInterface;
 
 }

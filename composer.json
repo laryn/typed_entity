@@ -10,6 +10,17 @@
         }
     ],
     "require": {},
-    "require-dev": {},
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "dev-master",
+        "drupal/coder": "8.3.x-dev",
+        "enlightn/security-checker": "^1.7",
+        "jakub-onderka/php-parallel-lint": "dev-master",
+        "localheinz/composer-normalize": "^2.13",
+        "nikic/php-parser": "^4.9@dev",
+        "phpmd/phpmd": "dev-master",
+        "phpmetrics/phpmetrics": "dev-master",
+        "phpro/grumphp": "dev-master",
+        "squizlabs/php_codesniffer": "^3.0@dev"
+    },
     "minimum-stability": "dev"
 }

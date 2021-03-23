@@ -2,33 +2,24 @@
 
 namespace Drupal\typed_entity\TypedRepositories;
 
-use Drupal\Component\Assertion\Inspector;
+use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
-use Drupal\typed_entity\InvalidValueException;
-use Drupal\typed_entity\Render\TypedEntityRenderContext;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\PluginBase;
+use Drupal\typed_entity\Annotation\ClassWithVariantsInterface;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
+use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
-use Drupal\typed_entity\WrappedEntityVariants\ContextAwareInterface;
-use Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use UnexpectedValueException;
 
 /**
  * Base class all repositories should extend from.
  */
-class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
-
-  /**
-   * The separator between the entity type ID and the bundle name.
-   *
-   * @var string
-   */
-  const SEPARATOR = ':';
+class TypedEntityRepositoryBase extends PluginBase implements TypedEntityRepositoryInterface, ContainerFactoryPluginInterface {
 
   /**
    * The entity type manager.
@@ -59,42 +50,50 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   protected $bundle;
 
   /**
-   * The wrapper class.
+   * The renderers for this repository.
    *
-   * @var string
+   * @var \Drupal\typed_entity\Annotation\ClassWithVariantsInterface
    */
-  protected $wrapperClass;
+  protected $renderers = NULL;
 
   /**
-   * Variant conditions.
+   * The wrappers for this repository.
    *
-   * @var \Drupal\typed_entity\WrappedEntityVariants\VariantConditionInterface[]
+   * @var \Drupal\typed_entity\Annotation\ClassWithVariantsInterface
    */
-  protected $variantConditions = [];
+  protected $wrappers = NULL;
 
   /**
-   * The renderers for this repository keyed by ID.
+   * TypedEntityRepositoryBase constructor.
    *
-   * @var \Drupal\typed_entity\Render\TypedEntityRendererInterface[]
-   */
-  protected $renderers = [];
-
-  /**
-   * The fallback renderer used when no renderer is appropriate.
-   *
-   * @var \Drupal\typed_entity\Render\TypedEntityRendererInterface
-   */
-  protected $fallbackRenderer;
-
-  /**
-   * RepositoryCollector constructor.
-   *
+   * @param array $configuration
+   *   Plugin configuration.
+   * @param string $plugin_id
+   *   Plugin ID.
+   * @param array $plugin_definition
+   *   Plugin definition.
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The service container.
+   *
+   * @throws \UnexpectedValueException
    */
-  public function __construct(ContainerInterface $container) {
+  public function __construct(array $configuration, string $plugin_id, array $plugin_definition, ContainerInterface $container) {
     $this->container = $container;
+    $this->validateAnnotation($plugin_definition);
     $this->entityTypeManager = $container->get('entity_type.manager');
+    $this->entityType = $this->entityTypeManager
+      ->getDefinition($plugin_definition['entity_type_id']);
+    $this->bundle = $plugin_definition['bundle'] ?? NULL;
+    $this->wrappers = $plugin_definition['wrappers'] ?? NULL;
+    $this->renderers = $plugin_definition['renderers'] ?? NULL;
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static($configuration, $plugin_id, $plugin_definition, $container);
   }
 
   /**
@@ -107,12 +106,7 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
     if (!$can_be_wrapped) {
       return NULL;
     }
-    $class = $this->negotiateVariant($entity);
-    return call_user_func(
-      [$class, 'create'],
-      $this->container,
-      $entity
-    );
+    return $this->wrapperFactory(new TypedEntityContext(['entity' => $entity]));
   }
 
   /**
@@ -122,68 +116,7 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
    */
   public function wrapMultiple(array $entities): array {
     // Wrap all the entities.
-    $wrapped = array_map([$this, 'wrap'], $entities);
-
-    // We do this because PHP 7 does not support type generics. In a distant
-    // future this will be unnecessary as the return type hint will be something
-    // like Array<Article>.
-    assert(Inspector::assertAll(function ($wrapped_entity) {
-      return $wrapped_entity instanceof $this->wrapperClass;
-    }, $wrapped));
-    return $wrapped;
-  }
-
-  /**
-   * Negotiates possible variants to the default based on entity values.
-   *
-   * Override this in the repositories that need variance.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   *
-   * @return string
-   *   The negotiated variant.
-   */
-  protected function negotiateVariant(EntityInterface $entity): string {
-    // Match the first variant condition found.
-    foreach ($this->variantConditions as $variant_condition) {
-      if ($variant_condition instanceof ContextAwareInterface) {
-        $variant_condition->setContext('entity', $entity);
-      }
-      assert($variant_condition instanceof VariantConditionInterface);
-      try {
-        $valid = $variant_condition->evaluate();
-      }
-      catch (InvalidValueException $e) {
-        $valid = FALSE;
-      }
-      if ($valid) {
-        // Only use it if the variant is also a wrapperClass.
-        $variant = $variant_condition->variant();
-        if (class_exists($variant) && is_subclass_of($variant, $this->wrapperClass)) {
-          // Return early to avoid evaluating more conditions.
-          return $variant;
-        }
-      }
-    }
-    // If none matches use the wrapper class.
-    return $this->wrapperClass;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id = ''): void {
-    $fallback_renderer_id = empty($fallback_renderer_id)
-      ? TypedEntityRendererBase::class
-      : $fallback_renderer_id;
-    $this->validateArguments($entity_type, $bundle, $wrapper_class, $fallback_renderer_id);
-    $this->entityType = $entity_type;
-    $this->bundle = $entity_type->getKey('bundle')
-      ? $bundle
-      : $entity_type->id();
-    $this->fallbackRenderer = $this->container->get($fallback_renderer_id);
-    $this->wrapperClass = $wrapper_class;
+    return array_map([$this, 'wrap'], $entities);
   }
 
   /**
@@ -215,67 +148,69 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function rendererFactory(TypedEntityRenderContext $context): array {
-    $valid_renderers = array_filter(
-      $this->renderers,
-      static function (TypedEntityRendererInterface $renderer) use ($context) {
-        return $renderer::applies($context);
-      }
-    );
-    return empty($valid_renderers) ? [$this->fallbackRenderer()] : $valid_renderers;
+  public function wrapperFactory(TypedEntityContext $context): ?WrappedEntityInterface {
+    $entity = $context->offsetGet('entity');
+    if (!$entity instanceof EntityInterface) {
+      throw new \UnexpectedValueException('Missing entity in context.');
+    }
+    $wrappers = $this->getPluginDefinition()['wrappers'] ?? NULL;
+    if (!$wrappers) {
+      return NULL;
+    }
+    assert($wrappers instanceof ClassWithVariantsInterface);
+    $class = $wrappers->negotiateVariant($context, WrappedEntityBase::class);
+    return $class
+      ? call_user_func_array([$class, 'create'], [$this->container, $entity])
+      : NULL;
   }
 
   /**
-   * Validates the repository initialization arguments.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type object for the repository.
-   * @param string $bundle
-   *   The bundle name.
-   * @param string $wrapper_class
-   *   The wrapper class for entities.
-   * @param string $fallback_renderer_id
-   *   The service ID for the fallback renderer.
-   *
-   * @throw \UnexpectedValueException;
+   * {@inheritdoc}
    */
-  private function validateArguments(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id): void {
+  public function rendererFactory(TypedEntityContext $context): ?TypedEntityRendererInterface {
+    $renderers = $this->getPluginDefinition()['renderers'] ?? NULL;
+    if (!$renderers) {
+      return NULL;
+    }
+    assert($renderers instanceof ClassWithVariantsInterface);
+    $class = $renderers->negotiateVariant($context, TypedEntityRendererBase::class) ?? TypedEntityRendererBase::class;
+    return call_user_func_array([$class, 'create'], [$this->container]);
+  }
+
+  /**
+   * Validates the repository annotation.
+   *
+   * @param array $plugin_definition
+   *   The plugin definition.
+   *
+   * @throws \UnexpectedValueException;
+   */
+  private function validateAnnotation(array $plugin_definition): void {
+    $entity_type_id = $plugin_definition['entity_type_id'] ?? NULL;
+    try {
+      $entity_type = $this->container->get('entity_type.manager')
+        ->getDefinition($entity_type_id);
+    }
+    catch (PluginException $exception) {
+      throw new \UnexpectedValueException('Unable to find the entity type "' . $entity_type_id . '".');
+    }
     $bundle_info = $this->container
       ->get('entity_type.bundle.info')
       ->getBundleInfo($entity_type->id());
     // When the entity type supports bundles, the bundle parameter is mandatory.
-    if (empty($bundle)) {
-      if ($entity_type->getKey('bundle')) {
-        throw new UnexpectedValueException('Missing bundle for entity type "' . $entity_type->id() . '"');
-      }
-      $bundle = $entity_type->id();
-    }
+    $bundle = $plugin_definition['bundle'] ?? NULL;
     // Unless the entity is bundle-less the bundle should be valid for the given
     // entity type.
-    if (empty($bundle_info[$bundle])) {
+    if ($bundle && empty($bundle_info[$bundle])) {
       $message = 'The bundle "' . $bundle . '" is not valid for entity type "' . $entity_type->id() . '"';
-      throw new UnexpectedValueException($message);
+      throw new \UnexpectedValueException($message);
     }
-    // Ensure the wrapper class exists.
-    if (!class_exists($wrapper_class)) {
-      $message = 'The wrapper class "' . $wrapper_class . '" could not be found.';
-      throw new UnexpectedValueException($message);
-    }
-    // Ensure the wrapper class implements the expected interface.
-    if (!is_a($wrapper_class, WrappedEntityBase::class, TRUE)) {
-      $message = 'The wrapper class "' . $wrapper_class . '" must extend "' . WrappedEntityBase::class . '" for backwards compatibility safety.';
-      throw new UnexpectedValueException($message);
-    }
-    // Ensure there is a service for the fallback renderer ID.
-    if (!$this->container->has($fallback_renderer_id)) {
-      $message = 'Non-existing service "' . $fallback_renderer_id . '" provided as a fallback renderer.';
-      throw new UnexpectedValueException($message);
-    }
-    // Ensure the fallback renderer is appropriate.
-    $fallback_renderer = $this->container->get($fallback_renderer_id);
-    if (!is_a($fallback_renderer, TypedEntityRendererBase::class)) {
-      $message = 'The fallback renderer "' . get_class($fallback_renderer) . '" must extend "' . TypedEntityRendererBase::class . '" for backwards compatibility safety.';
-      throw new UnexpectedValueException($message);
+    $wrappers = $plugin_definition['wrappers'] ?? NULL;
+    if ($wrappers instanceof ClassWithVariantsInterface) {
+      // Ensure the wrapper class exists.
+      if (!$wrappers->getFallback()) {
+        throw new \UnexpectedValueException('The wrapper fallback does not exist.');
+      }
     }
   }
 
@@ -330,23 +265,6 @@ class TypedEntityRepositoryBase implements TypedEntityRepositoryInterface {
     };
     $accessible_entities = array_filter($entities, $check_access);
     return $this->wrapMultiple($accessible_entities);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function addRenderer(TypedEntityRendererInterface $renderer): void {
-    $this->renderers[] = $renderer;
-  }
-
-  /**
-   * The fallback renderer.
-   *
-   * @return \Drupal\typed_entity\Render\TypedEntityRendererInterface
-   *   The renderer.
-   */
-  protected function fallbackRenderer(): TypedEntityRendererInterface {
-    return $this->fallbackRenderer;
   }
 
 }

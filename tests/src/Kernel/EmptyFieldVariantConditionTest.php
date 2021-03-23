@@ -3,8 +3,8 @@
 namespace Drupal\Tests\typed_entity\Kernel;
 
 use Drupal\node\Entity\Node;
+use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\WrappedEntityVariants\EmptyFieldVariantCondition;
-use Drupal\typed_entity_test\WrappedEntities\NewsArticle;
 
 /**
  * Test the FieldValueVariantCondition class.
@@ -27,9 +27,8 @@ class EmptyFieldVariantConditionTest extends KernelTestBase {
     ]);
     $article->save();
 
-    $condition = new EmptyFieldVariantCondition('field_node_type', NewsArticle::class);
+    $condition = new EmptyFieldVariantCondition('field_node_type', new TypedEntityContext(['entity' => $article]));
 
-    $condition->setContext('entity', $article);
     static::assertTrue($condition->evaluate());
 
     $article->field_node_type->value = 'News';

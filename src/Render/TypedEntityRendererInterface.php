@@ -2,20 +2,23 @@
 
 namespace Drupal\typed_entity\Render;
 
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\typed_entity\TypedEntityContext;
+use Drupal\typed_entity\Annotation\VariantInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
 /**
  * Renderers are classes that encapsulate buisiness logic rendering an entity.
  */
-interface TypedEntityRendererInterface {
+interface TypedEntityRendererInterface extends VariantInterface, ContainerInjectionInterface {
 
   /**
    * Returns a render array representation of the wrapped entity.
    *
    * @param \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface $wrapped_entity
    *   The wrapped entity to render.
-   * @param \Drupal\typed_entity\Render\TypedEntityRenderContext $context
+   * @param \Drupal\typed_entity\TypedEntityContext $context
    *   The context this entity is rendered in. This contains arbitrary
    *   information on how to render the entity. Special keys:
    *     - 'view_mode': The view mode to use to render the entity. Leave it
@@ -24,7 +27,7 @@ interface TypedEntityRendererInterface {
    * @return mixed[]
    *   A render array.
    */
-  public function build(WrappedEntityInterface $wrapped_entity, TypedEntityRenderContext $context): array;
+  public function build(WrappedEntityInterface $wrapped_entity, TypedEntityContext $context): array;
 
   /**
    * Alter the render array for the associated entity.
@@ -70,16 +73,5 @@ interface TypedEntityRendererInterface {
    *   through the render pipeline.
    */
   public function preprocess(array &$variables, WrappedEntityInterface $wrapped_entity): void;
-
-  /**
-   * Checks if a renderer should be used in a given context.
-   *
-   * @param \Drupal\typed_entity\Render\TypedEntityRenderContext $context
-   *   The render context.
-   *
-   * @return bool
-   *   TRUE if it should be used. FALSE otherwise.
-   */
-  public static function applies(TypedEntityRenderContext $context): bool;
 
 }

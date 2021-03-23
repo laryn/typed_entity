@@ -1,15 +1,29 @@
 <?php
 
-namespace Drupal\typed_entity_example\TypedRepositories;
+namespace Drupal\typed_entity_example\Plugin\TypedEntityRepository;
 
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
-use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
-use Drupal\typed_entity_example\WrappedEntities\BakingArticle;
 
 /**
  * The repository for articles.
+ *
+ * @TypedEntityRepository(
+ *   entity_type_id = "node",
+ *   bundle = "article",
+ *   wrappers = @ClassWithVariants(
+ *     fallback = "Drupal\typed_entity_example\WrappedEntities\Article",
+ *     variants = {
+ *       "Drupal\typed_entity_example\WrappedEntities\BakingArticle",
+ *     }
+ *   ),
+ *   renderers = @ClassWithVariants(
+ *     variants = {
+ *       "Drupal\typed_entity_example\Render\Summary',
+ *     }
+ *   ),
+ *   description = @Translation("Repository that holds business logic applicable to all articles.")
+ * )
  */
 final class ArticleRepository extends TypedEntityRepositoryBase {
 
@@ -17,20 +31,6 @@ final class ArticleRepository extends TypedEntityRepositoryBase {
    * The field that contains the data about the article tags.
    */
   const FIELD_TAGS_NAME = 'field_tags';
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init(EntityTypeInterface $entity_type, string $bundle, string $wrapper_class, string $fallback_renderer_id = ''): void {
-    parent::init($entity_type, $bundle, $wrapper_class, $fallback_renderer_id);
-    $field_map = $this->container->get('entity_field.manager')->getFieldMap();
-    $has_field = $field_map[$entity_type->id()][static::FIELD_TAGS_NAME]['bundles'][$bundle] ?? NULL;
-    if ($has_field) {
-      $this->variantConditions = [
-        new FieldValueVariantCondition(static::FIELD_TAGS_NAME, 24, BakingArticle::class),
-      ];
-    }
-  }
 
   /**
    * Finds article by tags.

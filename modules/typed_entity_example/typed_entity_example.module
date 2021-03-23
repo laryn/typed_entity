@@ -18,7 +18,7 @@ function typed_entity_example_node_view_alter(array &$build, EntityInterface $en
   if ($entity->bundle() !== 'article') {
     return;
   }
-  $repository_manager = \Drupal::service(RepositoryManager::class);
+  $repository_manager = typed_entity_repository_manager();
   assert($repository_manager instanceof RepositoryManager);
   if (!$repository = $repository_manager->repositoryFromEntity($entity)) {
     return;

@@ -4,7 +4,6 @@ namespace Drupal\Tests\typed_entity\Kernel;
 
 use Drupal\node\Entity\Node;
 use Drupal\Tests\field\Traits\EntityReferenceTestTrait;
-use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity_test\WrappedEntities\Page;
 
 /**
@@ -46,7 +45,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
     ]);
     $this->node->save();
 
-    $this->wrapper = \Drupal::service(RepositoryManager::class)->wrap($this->node);
+    $this->wrapper = typed_entity_repository_manager()->wrap($this->node);
   }
 
   /**

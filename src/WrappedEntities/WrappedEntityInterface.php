@@ -3,12 +3,13 @@
 namespace Drupal\typed_entity\WrappedEntities;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\typed_entity\Annotation\VariantInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Common interface for all the entity wrappers.
  */
-interface WrappedEntityInterface {
+interface WrappedEntityInterface extends VariantInterface {
 
   /**
    * Gets the wrapped entity.

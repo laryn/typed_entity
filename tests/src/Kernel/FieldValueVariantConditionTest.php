@@ -5,8 +5,8 @@ namespace Drupal\Tests\typed_entity\Kernel;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\typed_entity\InvalidValueException;
+use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
-use Drupal\typed_entity_test\WrappedEntities\NewsArticle;
 
 /**
  * Test the FieldValueVariantCondition class.
@@ -23,10 +23,10 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    * @covers ::isNegated
    */
   public function testIsNegated() {
-    $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
+    $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext());
     static::assertFalse($condition->isNegated());
 
-    $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class, TRUE);
+    $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext(), TRUE);
     static::assertTrue($condition->isNegated());
   }
 
@@ -42,10 +42,8 @@ class FieldValueVariantConditionTest extends KernelTestBase {
     ]);
     $article->save();
 
-    $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
-    $condition->setContext('entity', $article);
-    $empty_condition = new FieldValueVariantCondition('field_node_type', NULL, NewsArticle::class);
-    $empty_condition->setContext('entity', $article);
+    $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext(['entity' => $article]));
+    $empty_condition = new FieldValueVariantCondition('field_node_type', NULL, new TypedEntityContext(['entity' => $article]));
 
     static::assertFalse($condition->evaluate());
     static::assertTrue($empty_condition->evaluate());
@@ -62,19 +60,9 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    * @covers ::summary
    */
   public function testSummary() {
-    $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
+    $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext());
     $summary = 'Active when the <em class="placeholder">field_node_type</em> is <em class="placeholder">News</em>.';
     static::assertSame($condition->summary()->__toString(), $summary);
-  }
-
-  /**
-   * Test the variant method.
-   *
-   * @covers ::variant
-   */
-  public function testVariant() {
-    $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
-    static::assertSame($condition->variant(), NewsArticle::class);
   }
 
   /**
@@ -85,12 +73,10 @@ class FieldValueVariantConditionTest extends KernelTestBase {
   public function testValidateContextNoEntity() {
     $this->createFooNodeType();
 
-    $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
-    $condition->setContext('entity', '');
+    $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext(['entity' => '']));
 
     $this->expectException(InvalidValueException::class);
     $condition->validateContext();
-
   }
 
   /**
@@ -106,8 +92,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
     ]);
     $node->save();
 
-    $condition = new FieldValueVariantCondition('field_node_type', 'News', NewsArticle::class);
-    $condition->setContext('entity', $node);
+    $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext(['entity' => $node]));
 
     $this->expectException(InvalidValueException::class);
     $condition->validateContext();

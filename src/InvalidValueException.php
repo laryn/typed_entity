@@ -2,9 +2,7 @@
 
 namespace Drupal\typed_entity;
 
-use Exception;
-
 /**
- * Custom InvalidValueException.
+ * Custom exception to convey invalid values.
  */
-class InvalidValueException extends Exception {}
+class InvalidValueException extends \Exception {}

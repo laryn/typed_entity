@@ -1,13 +1,7 @@
-parameters:
-  git_dir: .
-  bin_dir: vendor/bin
-  additional_info: "\nVisit https://github.com/e0ipso/travis-drupal-module#readme for documentation!\n"
-  hooks_preset: local
+grumphp:
   stop_on_failure: false
   ignore_unstaged_changes: false
   hide_circumvention_tip: false
-  process_async_limit: 10
-  process_async_wait: 1000
   process_timeout: 60
   tasks:
     yamllint: ~
@@ -16,13 +10,7 @@ parameters:
     jsonlint: ~
     git_commit_message:
       enforce_capitalized_subject: false
-      type_scope_conventions:
-        - types: ['build', 'ci', 'chore', 'docs', 'feat', 'fix', 'perf', 'refactor', 'revert', 'style', 'test']
-        - scopes: ['schema', 'form', 'drupal', 'api']
       max_subject_width: 50
-    git_branch_name:
-      whitelist:
-        - '/((build|ci|chore|docs|feat|fix|perf|refactor|revert|style|test)\/[a-z0-9-]+|8.x-[0-9]+.x|master)/'
       allow_detached_head: true
     phpcs:
       standard:
@@ -35,6 +23,7 @@ parameters:
         - bower_components
         - node_modules
         - vendor
+        - /tests/.*
       triggered_by:
         - php
         - module
@@ -51,6 +40,13 @@ parameters:
       triggered_by:
         - php
         - module
+      exclude:
+        - .github
+        - .gitlab
+        - bower_components
+        - node_modules
+        - vendor
+        - '/tests/**/*'
     phpparser:
       visitors:
         no_exit_statements: ~
@@ -59,8 +55,21 @@ parameters:
           blacklist: [var_dump]
       metadata:
         priority: 100000
-    securitychecker: ~
-    phplint: ~
+    securitychecker_enlightn:
+      lockfile: ./composer.lock
+      run_always: false
+    phplint:
+      exclude: []
+      jobs: ~
+      short_open_tag: false
+      ignore_patterns: []
+      triggered_by:
+        - php
+        - module
+        - inc
+        - install
+        - profile
+        - theme
   ascii:
     failed: vendor/phpro/grumphp/resources/ascii/failed.txt
     succeeded: vendor/phpro/grumphp/resources/ascii/succeeded.txt

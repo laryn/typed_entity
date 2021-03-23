@@ -4,8 +4,9 @@ namespace Drupal\typed_entity_test\Render\Article;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\State\StateInterface;
-use Drupal\typed_entity\Render\TypedEntityRenderContext;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
+use Drupal\typed_entity\TypedEntityContext;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Renderer that applies depending on the server state.
@@ -30,7 +31,17 @@ final class ConditionalRenderer extends TypedEntityRendererBase {
   /**
    * {@inheritdoc}
    */
-  public static function applies(TypedEntityRenderContext $context): bool {
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('state')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function applies(TypedEntityContext $context): bool {
     return $context->offsetExists('typed_entity_test.conditional_renderer')
       && $context->offsetGet('typed_entity_test.conditional_renderer');
   }

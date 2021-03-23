@@ -7,13 +7,12 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\typed_entity\InvalidValueException;
+use Drupal\typed_entity\TypedEntityContext;
 
 /**
  * Configurable variant condition that checks for a given value in a field.
  */
-class FieldValueVariantCondition extends VariantConditionBase implements ContextAwareInterface {
-
-  use ContextAwareTrait;
+class FieldValueVariantCondition extends VariantConditionBase {
 
   /**
    * Name of the field that contains the data.
@@ -36,15 +35,15 @@ class FieldValueVariantCondition extends VariantConditionBase implements Context
    *   Name of the field that contains the data.
    * @param mixed $value
    *   The value to check for.
-   * @param string $variant
-   *   The FQN of the wrapper class for the variant.
+   * @param \Drupal\typed_entity\TypedEntityContext $context
+   *   The context.
    * @param bool $is_negated
    *   Inverse the result of the evaluation.
    *
    * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
    */
-  public function __construct(string $field_name, $value, string $variant = '', bool $is_negated = FALSE) {
-    parent::__construct($variant, $is_negated);
+  public function __construct(string $field_name, $value, TypedEntityContext $context, bool $is_negated = FALSE) {
+    parent::__construct($context, $is_negated);
     $this->fieldName = $field_name;
     $this->value = $value;
   }
@@ -60,18 +59,15 @@ class FieldValueVariantCondition extends VariantConditionBase implements Context
     // If the value is explicitly set to NULL, use the
     // EmptyFieldVariantCondition instead.
     if ($this->value === NULL) {
-      $empty_condition = new EmptyFieldVariantCondition($this->fieldName, $this->variant, $this->isNegated);
-      foreach ($this->contexts as $name => $value) {
-        $empty_condition->setContext($name, $value);
-      }
+      $empty_condition = new EmptyFieldVariantCondition($this->fieldName, $this->context, $this->isNegated);
       return $empty_condition->evaluate();
     }
     $this->validateContext();
-    $entity = $this->getContext('entity');
+    $entity = $this->context->offsetGet('entity');
     assert($entity instanceof FieldableEntityInterface);
     // Check if the any of the values for the field match the configured value.
     $values = $entity->get($this->fieldName)->getValue();
-    // TODO: inject the field manager for testability.
+    // @todo inject the field manager for testability.
     $field_manager = \Drupal::service('entity_field.manager');
     assert($field_manager instanceof EntityFieldManager);
     $definition = $field_manager->getFieldStorageDefinitions($entity->getEntityTypeId())[$this->fieldName];
@@ -97,7 +93,7 @@ class FieldValueVariantCondition extends VariantConditionBase implements Context
    * {@inheritdoc}
    */
   public function validateContext(): void {
-    $entity = $this->getContext('entity');
+    $entity = $this->context->offsetGet('entity');
     if (!$entity instanceof FieldableEntityInterface) {
       throw new InvalidValueException('The context for the entity was not fulfilled');
     }

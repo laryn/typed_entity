@@ -2,6 +2,7 @@
 
 namespace Drupal\typed_entity_ui\Form;
 
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -10,6 +11,11 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Form to select an entity type and a bundle to explore the typed entity info.
+ *
+ * @SuppressWarnings(PHPMD.UnusedLocalVariable)
+ */
 class ExploreForm extends FormBase {
 
   /**
@@ -42,7 +48,7 @@ class ExploreForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): self {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info')
@@ -52,14 +58,14 @@ class ExploreForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'typed_entity_ui_explore';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $content_entity_types = array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $entity_type) {
       return $entity_type instanceof ContentEntityTypeInterface;
     });
@@ -97,9 +103,15 @@ class ExploreForm extends FormBase {
       '#type' => 'container',
       '#attributes' => ['id' => 'bundle-wrapper'],
     ];
-    if ($entity_type_id = $form_state->getValue('entity_type_id')) {
-      $has_bundles = (bool) $this->entityTypeManager
-        ->getDefinition($entity_type_id)->getBundleEntityType();
+    $entity_type_id = $form_state->getValue('entity_type_id');
+    if ($entity_type_id) {
+      try {
+        $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+      }
+      catch (PluginNotFoundException $e) {
+        return $form;
+      }
+      $has_bundles = (bool) $entity_type->getBundleEntityType();
       if ($has_bundles) {
         $bundles = [];
         $bundle_info = $this->bundleInfo->getBundleInfo($entity_type_id);
@@ -108,8 +120,6 @@ class ExploreForm extends FormBase {
             ? $this->t($info['label'])
             : $info['label'];
         }
-        // Add a color element to the bundle_wrapper container with the bundles
-        // for a given entity type.
         $form['bundle_wrapper']['bundle'] = [
           '#type' => 'select',
           '#empty_option' => $this->t('- Select -'),
@@ -127,13 +137,13 @@ class ExploreForm extends FormBase {
    *
    * @param array $form
    *   From render array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   Current state of form.
    *
    * @return array
    *   Color selection section of the form.
+   *
+   * @SuppressWarnings(PHPMD.)
    */
-  public function bundleCallback(array &$form, FormStateInterface $form_state) {
+  public function bundleCallback(array $form): array {
     return $form['bundle_wrapper'];
   }
 
@@ -144,10 +154,16 @@ class ExploreForm extends FormBase {
    *   The render array of the currently built form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   Object describing the current state of the form.
+   *
+   * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $values = $form_state->getValues();
-    $typed_entity_id = implode('.', array_filter([$form_state->getValue('entity_type_id'), $form_state->getValue('bundle')]));
+    $typed_entity_id = implode(
+      '.',
+      array_filter([
+        $form_state->getValue('entity_type_id'),
+        $form_state->getValue('bundle'),
+      ]));
     $form_state->setRedirect(
       'typed_entity_ui.details',
       ['typed_entity_id' => $typed_entity_id]

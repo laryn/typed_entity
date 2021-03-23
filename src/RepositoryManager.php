@@ -2,24 +2,17 @@
 
 namespace Drupal\typed_entity;
 
+use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
-use UnexpectedValueException;
 
 /**
  * Repository to wrap entities and negotiate specific repositories.
  */
 class RepositoryManager implements EntityWrapperInterface {
-
-  /**
-   * The collected repositories.
-   *
-   * @var \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface[]
-   */
-  private $repositories = [];
 
   /**
    * The entity type manager.
@@ -29,84 +22,23 @@ class RepositoryManager implements EntityWrapperInterface {
   private $entityTypeManager;
 
   /**
-   * RepositoryCollector constructor.
+   * The plugin manager.
+   *
+   * @var \Drupal\typed_entity\TypedEntityRepositoryPluginManager
+   */
+  private $pluginManager;
+
+  /**
+   * RepositoryManager constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\typed_entity\TypedEntityRepositoryPluginManager $plugin_manager
+   *   The plugin manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TypedEntityRepositoryPluginManager $plugin_manager) {
     $this->entityTypeManager = $entity_type_manager;
-  }
-
-  /**
-   * Adds a repository to the list.
-   *
-   * @param \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface $repository
-   *   The typed entity repository to collect.
-   * @param string $entity_type_id
-   *   The entity type ID.
-   * @param string $wrapper_class
-   *   The FQN for the class that will wrap this entity.
-   * @param string $bundle
-   *   The bundle name.
-   * @param \Drupal\typed_entity\Render\TypedEntityRendererInterface|null $fallback_renderer
-   *   The fallback renderer.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   *
-   * @todo: The variant negotiation is still missing.
-   */
-  public function addRepository(
-    TypedEntityRepositoryInterface $repository,
-    string $entity_type_id,
-    string $wrapper_class,
-    string $bundle = '',
-    string $fallback_renderer = NULL
-  ): void {
-    $fallback_renderer = $fallback_renderer ?? '';
-    if (empty($entity_type_id)) {
-      // We get an empty entity type ID when processing the parent service. We
-      // do not want to include it in the collection.
-      return;
-    }
-    $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-    if (empty($bundle)) {
-      $this->addAllBundles($repository, $entity_type_id, $wrapper_class, $fallback_renderer);
-    }
-    else {
-      try {
-        $repository->init($entity_type, $bundle, $wrapper_class, $fallback_renderer);
-      }
-      catch (UnexpectedValueException $exception) {
-        return;
-      }
-    }
-    $this->repositories[$repository->id()] = $repository;
-  }
-
-  /**
-   * Adds all the bundles for an entity type using the provided class.
-   *
-   * @param \Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface $repository
-   *   The repository to add.
-   * @param string $entity_type_id
-   *   The entity type ID.
-   * @param string $wrapper_class
-   *   The class to use for the wrapper.
-   * @param \Drupal\typed_entity\Render\TypedEntityRendererInterface|null $fallback_renderer
-   *   The fallback renderer.
-   */
-  private function addAllBundles(
-    TypedEntityRepositoryInterface $repository,
-    string $entity_type_id,
-    string $wrapper_class,
-    $fallback_renderer = NULL
-  ): void {
-    $bundle_info = \Drupal::service('entity_type.bundle.info')
-      ->getBundleInfo($entity_type_id);
-    array_map(function (string $bunde) use ($repository, $entity_type_id, $wrapper_class, $fallback_renderer) {
-      $this->addRepository($repository, $entity_type_id, $wrapper_class, $bunde, $fallback_renderer);
-    }, array_keys($bundle_info));
+    $this->pluginManager = $plugin_manager;
   }
 
   /**
@@ -119,7 +51,15 @@ class RepositoryManager implements EntityWrapperInterface {
    *   The repository.
    */
   public function get(string $repository_id): ?TypedEntityRepositoryInterface {
-    return $this->repositories[$repository_id] ?? NULL;
+    try {
+      $instance = $this->pluginManager->createInstance($repository_id, []);
+    }
+    catch (PluginException $exception) {
+      return NULL;
+    }
+    return $instance instanceof TypedEntityRepositoryInterface
+      ? $instance
+      : NULL;
   }
 
   /**
@@ -159,8 +99,13 @@ class RepositoryManager implements EntityWrapperInterface {
    * {@inheritdoc}
    */
   public function wrap(EntityInterface $entity): ?WrappedEntityInterface {
-    if (!$repository = $this->repositoryFromEntity($entity)) {
-      return NULL;
+    $repository = $this->repositoryFromEntity($entity);
+    if (!$repository) {
+      // Maybe there is a repository for all bundles.
+      $repository = $this->repository($entity->getEntityTypeId());
+      if (!$repository) {
+        return NULL;
+      }
     }
     return $repository->wrap($entity);
   }

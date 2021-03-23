@@ -5,7 +5,7 @@ namespace Drupal\Tests\typed_entity\Kernel;
 use Drupal\node\Entity\Node;
 use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryBase;
-use Drupal\typed_entity_test\TypedRepositories\ArticleRepository;
+use Drupal\typed_entity_test\Plugin\TypedEntityRepository\ArticleRepository;
 use Drupal\typed_entity_test\WrappedEntities\Article;
 
 /**
@@ -23,7 +23,7 @@ class RepositoryManagerTest extends KernelTestBase {
    * @covers ::repository
    */
   public function testRepository() {
-    $manager = \Drupal::service(RepositoryManager::class);
+    $manager = typed_entity_repository_manager();
     assert($manager instanceof RepositoryManager);
 
     $repository = $manager->repository('node', 'article');
@@ -47,7 +47,7 @@ class RepositoryManagerTest extends KernelTestBase {
     ]);
     $node->save();
 
-    $manager = \Drupal::service(RepositoryManager::class);
+    $manager = typed_entity_repository_manager();
     assert($manager instanceof RepositoryManager);
 
     $repository = $manager->repositoryFromEntity($node);
@@ -66,7 +66,7 @@ class RepositoryManagerTest extends KernelTestBase {
     ]);
     $node->save();
 
-    $manager = \Drupal::service(RepositoryManager::class);
+    $manager = typed_entity_repository_manager();
     assert($manager instanceof RepositoryManager);
 
     $article_wrapper = $manager->wrap($node);
@@ -79,7 +79,7 @@ class RepositoryManagerTest extends KernelTestBase {
    * @covers ::wrapMultiple
    */
   public function testWrapMultiple() {
-    $manager = \Drupal::service(RepositoryManager::class);
+    $manager = typed_entity_repository_manager();
     assert($manager instanceof RepositoryManager);
 
     $article_wrappers = $manager->wrapMultiple($this->createArticles());

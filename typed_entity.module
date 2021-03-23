@@ -7,7 +7,7 @@
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\typed_entity\Render\TypedEntityRenderContext;
+use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
 use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
@@ -16,18 +16,11 @@ use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
  * Implements hook_entity_view_alter().
  */
 function typed_entity_entity_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
-  if (!$entity instanceof EntityInterface) {
-    // Unable to find the entity.
+  [$renderer, $wrapped_entity] = _typed_entity_find_renderer($entity, $build);
+  if (!$renderer instanceof TypedEntityRendererInterface || !$wrapped_entity instanceof WrappedEntityInterface) {
     return;
   }
-  [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $build);
-  if (!is_array($renderers) || !$wrapped_entity instanceof WrappedEntityInterface) {
-    return;
-  }
-  $build = array_reduce($renderers, static function (array $build, TypedEntityRendererInterface $renderer) use ($wrapped_entity, $display) {
-    $renderer->viewAlter($build, $wrapped_entity, $display);
-    return $build;
-  }, $build);
+  $renderer->viewAlter($build, $wrapped_entity, $display);
 }
 
 /**
@@ -38,14 +31,11 @@ function typed_entity_preprocess(&$variables, $hook) {
   if (!$entity instanceof EntityInterface) {
     return;
   }
-  [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $variables['elements'] ?? []);
-  if (!is_array($renderers) || !$wrapped_entity instanceof WrappedEntityInterface) {
+  [$renderer, $wrapped_entity] = _typed_entity_find_renderer($entity, $variables['elements'] ?? []);
+  if (!$renderer instanceof TypedEntityRendererInterface || !$wrapped_entity instanceof WrappedEntityInterface) {
     return;
   }
-  $variables = array_reduce($renderers, static function (array $vars, TypedEntityRendererInterface $renderer) use ($wrapped_entity) {
-    $renderer->preprocess($vars, $wrapped_entity);
-    return $vars;
-  }, $variables);
+  $renderer->preprocess($variables, $wrapped_entity);
 }
 
 /**
@@ -56,14 +46,11 @@ function typed_entity_entity_display_build_alter(&$build, $context) {
   if (!$entity instanceof EntityInterface) {
     return;
   }
-  [$renderers, $wrapped_entity] = _typed_entity_find_renderers($entity, $build);
-  if (!is_array($renderers) || !$wrapped_entity instanceof WrappedEntityInterface) {
+  [$renderer, $wrapped_entity] = _typed_entity_find_renderer($entity, $build);
+  if (!$renderer instanceof TypedEntityRendererInterface || !$wrapped_entity instanceof WrappedEntityInterface) {
     return;
   }
-  $build = array_reduce($renderers, static function (array $vars, TypedEntityRendererInterface $renderer) use ($wrapped_entity, $context) {
-    $renderer->displayBuildAlter($vars, $wrapped_entity, $context);
-    return $vars;
-  }, $build);
+  $renderer->displayBuildAlter($build, $wrapped_entity, $context);
 }
 
 /**
@@ -79,22 +66,25 @@ function typed_entity_repository_manager(): RepositoryManager {
 }
 
 /**
+ * Finds the renderer for the entity with the render array.
+ *
  * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
  * @param array $build
+ *   The render array.
  *
  * @return array
+ *   The pair of wrapped entity and renderer.
  */
-function _typed_entity_find_renderers(EntityInterface $entity, array $build): array {
-  $repository_manager = \Drupal::service(RepositoryManager::class);
-  assert($repository_manager instanceof RepositoryManager);
-  $repository = $repository_manager->repository($entity->getEntityTypeId(), $entity->bundle());
+function _typed_entity_find_renderer(EntityInterface $entity, array $build): array {
+  $repository = typed_entity_repository_manager()->repositoryFromEntity($entity);
   if (!$repository) {
     return [NULL, NULL];
   }
   $context = _typed_entity_build_render_context($build, $entity);
-  $renderers = $repository->rendererFactory($context);
+  $renderer = $repository->rendererFactory($context);
   $wrapped_entity = $repository->wrap($entity);
-  return [$renderers, $wrapped_entity];
+  return [$renderer, $wrapped_entity];
 }
 
 /**
@@ -105,12 +95,12 @@ function _typed_entity_find_renderers(EntityInterface $entity, array $build): ar
  * @param \Drupal\Core\Entity\EntityInterface|null $entity
  *   The entity.
  *
- * @return \Drupal\typed_entity\Render\TypedEntityRenderContext
+ * @return \Drupal\typed_entity\TypedEntityContext
  *   The render context.
  */
-function _typed_entity_build_render_context(array $variables, EntityInterface $entity = NULL): TypedEntityRenderContext {
+function _typed_entity_build_render_context(array $variables, EntityInterface $entity = NULL): TypedEntityContext {
   // Get only the properties that start by a '#'.
-  $context = new TypedEntityRenderContext();
+  $context = new TypedEntityContext();
   foreach ($variables as $key => $value) {
     if (!is_string($key) || $key[0] !== '#') {
       continue;

@@ -5,6 +5,7 @@ namespace Drupal\typed_entity\WrappedEntities;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilderInterface;
 use Drupal\typed_entity\RepositoryManager;
+use Drupal\typed_entity\TypedEntityContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -130,7 +131,7 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    */
   protected function repositoryManager(): RepositoryManager {
     if (!$this->repositoryManager) {
-      $this->repositoryManager = \Drupal::service(RepositoryManager::class);
+      $this->repositoryManager = typed_entity_repository_manager();
     }
     return $this->repositoryManager;
   }
@@ -140,6 +141,8 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    *
    * @return \Drupal\Core\Entity\EntityViewBuilderInterface
    *   The repository manager.
+   *
+   * @SuppressWarnings(PHPMD.StaticAccess)
    */
   protected function viewBuilder(): EntityViewBuilderInterface {
     if (!$this->viewBuilder) {
@@ -172,6 +175,13 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    */
   public function setRepositoryManager(RepositoryManager $repository_manager): void {
     $this->repositoryManager = $repository_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function applies(TypedEntityContext $context): bool {
+    return FALSE;
   }
 
 }

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Drupal\typed_entity_ui\Controller;
-
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Render\MarkupInterface;
@@ -13,6 +11,9 @@ use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\TypedRepositories\TypedEntityRepositoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Controller to print the typed entity info for a given type.
+ */
 class ExploreDetails extends ControllerBase {
 
   /**
@@ -75,7 +76,10 @@ class ExploreDetails extends ControllerBase {
   public function title(string $typed_entity_id): MarkupInterface {
     [$entity_type_label, $bundle_label] = $this->getLabels($typed_entity_id);
     if ($bundle_label) {
-      return $this->t('Explore typed entity: %bundle (%type)', ['%type' => $entity_type_label, '%bundle' => $bundle_label]);
+      return $this->t(
+        'Explore typed entity: %bundle (%type)',
+        ['%type' => $entity_type_label, '%bundle' => $bundle_label]
+      );
     }
     return $this->t('Explore typed entity: %type', ['%type' => $entity_type_label]);
   }
@@ -96,7 +100,7 @@ class ExploreDetails extends ControllerBase {
     if (!$repository instanceof TypedEntityRepositoryInterface) {
       return $this->getNotFoundOutput($typed_entity_id);
     }
-    $reflection_repository = new \ReflectionClass($repository);
+    $reflection_repo = new \ReflectionClass($repository);
     return [
       [
         '#type' => 'html_tag',
@@ -105,7 +109,7 @@ class ExploreDetails extends ControllerBase {
       ],
       [
         '#theme' => 'php_class_info',
-        '#reflection' => $reflection_repository,
+        '#reflection' => $reflection_repo,
       ],
     ];
   }
