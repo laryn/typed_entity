@@ -8,7 +8,7 @@
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\typed_entity\RepositoryManager;
-use Drupal\typed_entity_example\TypedRepositories\ArticleRepository;
+use Drupal\typed_entity_example\Plugin\TypedRepositories\ArticleRepository;
 use Drupal\typed_entity_example\WrappedEntities\Article;
 
 /**

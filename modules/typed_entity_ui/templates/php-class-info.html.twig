@@ -1,12 +1,9 @@
 {{ attach_library('typed_entity_ui/php_class_info') }}
 <div{{ attributes }}>
-  <h3>{{ 'Class information'|t }}</h3>
-  <code class="className">{{ name }}</code>
-  <h4>{{ 'Class DocBlock'|t }}</h4>
-  <pre>{{ doc_comment }}</pre>
+  {{ name }}
   {% if parent %}
     <h4>{{ 'Parent'|t }}</h4>
-    <code class="className">{{ parent }}</code>
+    {{ parent }}
   {% endif %}
   {{ interfaces }}
 </div>

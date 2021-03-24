@@ -8,3 +8,7 @@ class_with_variants:
     theme:
       css/typed_entity_ui.class_with_variants.css: {}
 
+php_class_summary:
+  css:
+    theme:
+      css/typed_entity_ui.php_class_summary.css: {}

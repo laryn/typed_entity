@@ -1,0 +1,28 @@
+.php-class-summary .comment,
+.php-class-summary .keyword,
+.php-class-summary .class-name,
+.php-class-summary .namespace {
+  font-weight: bold;
+  opacity: 0.8;
+  font-family: monospace, monospace;
+}
+
+.php-class-summary pre.comment {
+  margin: 0;
+}
+
+.php-class-summary .namespace {
+  opacity: 0.55;
+}
+
+.php-class-summary .keyword {
+  color: darkmagenta;
+}
+
+.php-class-summary .class-name {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  opacity: 1;
+  border-bottom: 1px dotted;
+}
