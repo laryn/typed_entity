@@ -172,7 +172,7 @@ class ExploreDetails extends ControllerBase {
         ->getLabel();
     }
     catch (PluginNotFoundException $exception) {
-      return [];
+      return [NULL, NULL];
     }
     if ($bundle) {
       $bundle_label = $this->bundleInfo->getBundleInfo($entity_type_id)[$bundle]['label'] ?? '';
