@@ -19,7 +19,7 @@ use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
  *   ),
  *   renderers = @ClassWithVariants(
  *     variants = {
- *       "Drupal\typed_entity_example\Render\Summary",
+ *       "Drupal\typed_entity_example\Render\Article\Summary",
  *     }
  *   ),
  *   description = @Translation("Repository that holds business logic applicable to all articles.")

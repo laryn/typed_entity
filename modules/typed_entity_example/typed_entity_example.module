@@ -5,36 +5,47 @@
  * Module implementation file.
  */
 
-use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\typed_entity\RepositoryManager;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\typed_entity_example\Plugin\TypedRepositories\ArticleRepository;
-use Drupal\typed_entity_example\WrappedEntities\Article;
 
 /**
- * Implements hook_ENTITY_TYPE_view_alter().
+ * Implements hook_entity_access().
+ *
+ * NOTE: This is for demonstrations of the APIs. If you were to implement this
+ * hook you would not want to do it this way. See the linked article for a
+ * better pattern.
+ *
+ * @see https://www.lullabot.com/articles/maintainable-code-drupal-wrapped-entities
  */
-function typed_entity_example_node_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
-  if ($entity->bundle() !== 'article') {
-    return;
-  }
+function typed_entity_example_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
   $repository_manager = typed_entity_repository_manager();
-  assert($repository_manager instanceof RepositoryManager);
-  if (!$repository = $repository_manager->repositoryFromEntity($entity)) {
-    return;
+  $repository = $repository_manager->repositoryFromEntity($entity);
+  if (!$repository instanceof ArticleRepository) {
+    return AccessResult::neutral();
   }
-  assert($repository instanceof ArticleRepository);
-  $articles = $repository->findByTags(['Vegetarian', 'heaLthy', 'Baking']);
-  $build['related'] = [
-    '#theme' => 'item_list',
-    '#items' => array_map(function (Article $article) {
-      return $article->label();
-    }, $articles),
-  ];
-  $author = $repository_manager->wrap($entity)
+  $tagged_articles = $repository->findByTags(['Vegetarian', 'heaLthy', 'Baking']);
+  if (count($tagged_articles) > 10000) {
+    return AccessResult::forbidden('According to our requirements too many related articles causes access denied.');
+  }
+  $nickname = $repository_manager->wrap($entity)
     ->owner()
     ->nickname();
-  $build['owner'] = [
-    '#markup' => '<p>' . t('The author is: %author', ['%author' => $author]) . '</p>',
-  ];
+  return _typed_entity_example_check_inappropriate_language($nickname)
+    ? AccessResult::forbidden('Nickname of the article\'s author is not appropriate.')
+    : AccessResult::neutral();
+}
+
+/**
+ * Fake service that checks for inappropriate words.
+ *
+ * @pararm string $input
+ *   The string to check.
+ *
+ * @return bool
+ *   TRUE if it contains inappropriate language.
+ */
+function _typed_entity_example_check_inappropriate_language(string $input): bool {
+  return FALSE;
 }

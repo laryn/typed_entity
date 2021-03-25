@@ -101,8 +101,7 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    */
   public function wrap(EntityInterface $entity): ?WrappedEntityInterface {
     // Validate that this entity can be wrapped.
-    $can_be_wrapped = $this->entityType->id() === $entity->getEntityTypeId()
-      && $this->bundle === $entity->bundle();
+    $can_be_wrapped = $this->entityType->id() === $entity->getEntityTypeId();
     if (!$can_be_wrapped) {
       return NULL;
     }

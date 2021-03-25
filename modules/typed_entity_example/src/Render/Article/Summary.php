@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\typed_entity_example\Render;
+namespace Drupal\typed_entity_example\Render\Article;
 
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 
