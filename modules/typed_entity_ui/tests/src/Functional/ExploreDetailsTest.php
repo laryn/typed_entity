@@ -96,7 +96,7 @@ class ExploreDetailsTest extends BrowserTestBase {
     $assert_session->pageTextContains('Variants:');
     $assert_session->pageTextContains('Fallback:');
     $assert_session->pageTextContains('final class Drupal\typed_entity_example\WrappedEntities\ BakingArticle');
-    $assert_session->pageTextContains('class Drupal\typed_entity_example\Render\ Summary');
+    $assert_session->pageTextContains('class Drupal\typed_entity_example\Render\Article\ Summary');
     $assert_session->pageTextContains('- None available -');
 
     // The user repository has no bundles and has less associated classes.

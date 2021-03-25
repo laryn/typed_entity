@@ -71,8 +71,6 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    * @covers ::validateContext
    */
   public function testValidateContextNoEntity() {
-    $this->createFooNodeType();
-
     $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext(['entity' => '']));
 
     $this->expectException(InvalidValueException::class);
@@ -85,7 +83,6 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    * @covers ::validateContext
    */
   public function testValidateContextNoField() {
-    $this->createFooNodeType();
     $node = Node::create([
       'type' => 'foo',
       'title' => $this->randomMachineName(),
@@ -96,18 +93,6 @@ class FieldValueVariantConditionTest extends KernelTestBase {
 
     $this->expectException(InvalidValueException::class);
     $condition->validateContext();
-  }
-
-  /**
-   * Create a dummy node type.
-   */
-  private function createFooNodeType() {
-    $node_type = NodeType::create([
-      'type' => 'foo',
-      'name' => 'Foo',
-      'description' => "A very fooey node type.",
-    ]);
-    $node_type->save();
   }
 
 }

@@ -101,8 +101,13 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    */
   public function wrap(EntityInterface $entity): ?WrappedEntityInterface {
     // Validate that this entity can be wrapped.
-    $can_be_wrapped = $this->entityType->id() === $entity->getEntityTypeId();
-    if (!$can_be_wrapped) {
+    if ($this->entityType->id() !== $entity->getEntityTypeId()) {
+      return NULL;
+    }
+    // We only want to enforce matching the bundle if the bundle was explicitly
+    // set in the typed repository, and the entity type supports bundles.
+    $bundle_is_supported = !empty($entity->getEntityType()->getKey('bundle'));
+    if ($bundle_is_supported && $this->bundle && $this->bundle !== $entity->bundle()) {
       return NULL;
     }
     return $this->wrapperFactory(new TypedEntityContext(['entity' => $entity]));

@@ -51,6 +51,11 @@ abstract class KernelTestBase extends BaseTestsKernelTestBase {
       'description' => "Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.",
     ]);
     $node_type->save();
+    $node_type = NodeType::create([
+      'type' => 'foo',
+      'name' => 'Foo',
+    ]);
+    $node_type->save();
 
     $field_storage = FieldStorageConfig::create([
       'field_name' => 'field_node_type',
