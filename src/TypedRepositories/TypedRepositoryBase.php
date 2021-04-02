@@ -129,9 +129,16 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    * @SuppressWarnings(PHPMD.ShortMethodName)
    */
   public function id(): string {
+    return static::generatePluginId($this->entityType->id(), $this->bundle);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function generatePluginId(string $entity_type_id, string $bundle = ''): string {
     return implode(
-      static::SEPARATOR,
-      array_filter([$this->entityType->id(), $this->bundle])
+      static::ID_PARTS_SEPARATOR,
+      array_filter([$entity_type_id, $bundle])
     );
   }
 

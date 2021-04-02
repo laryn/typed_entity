@@ -42,7 +42,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
     ]);
     $foo->save();
 
-    $repository = typed_entity_repository_manager()->get('node:article');
+    $repository = typed_entity_repository_manager()->get('node.article');
     $article_wrapper = $repository->wrap($article);
     static::assertInstanceOf(Article::class, $article_wrapper);
 
@@ -73,7 +73,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    * @covers ::wrapMultiple
    */
   public function testWrapMultiple() {
-    $repository = typed_entity_repository_manager()->get('node:article');
+    $repository = typed_entity_repository_manager()->get('node.article');
 
     $article_wrappers = $repository->wrapMultiple($this->createArticles());
     foreach ($article_wrappers as $article_wrapper) {
@@ -87,8 +87,8 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    * @covers ::id
    */
   public function testId() {
-    $repository = typed_entity_repository_manager()->get('node:article');
-    static::assertSame('node:article', $repository->id());
+    $repository = typed_entity_repository_manager()->get('node.article');
+    static::assertSame('node.article', $repository->id());
   }
 
   /**
@@ -97,7 +97,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    * @covers ::getQuery
    */
   public function testGetQuery() {
-    $repository = typed_entity_repository_manager()->get('node:article');
+    $repository = typed_entity_repository_manager()->get('node.article');
     $query = $repository->getQuery();
 
     $this->createArticles();

@@ -6,8 +6,8 @@ use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
-use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
+use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 
 /**
  * Repository to wrap entities and negotiate specific repositories.
@@ -29,6 +29,13 @@ class RepositoryManager implements EntityWrapperInterface {
   private $pluginManager;
 
   /**
+   * Caches the deriver base IDs.
+   *
+   * @var string[]|null
+   */
+  protected $deriverBaseIds;
+
+  /**
    * RepositoryManager constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -44,6 +51,9 @@ class RepositoryManager implements EntityWrapperInterface {
   /**
    * Get a repository.
    *
+   * If more than one deriver declares the same pair of entity_type and bundle,
+   * the first one found is returned.
+   *
    * @param string $repository_id
    *   The repository identifier.
    *
@@ -55,11 +65,83 @@ class RepositoryManager implements EntityWrapperInterface {
       $instance = $this->pluginManager->createInstance($repository_id, []);
     }
     catch (PluginException $exception) {
+      $instance = array_reduce(
+        $this->extractDeriverBaseIds(),
+        function ($carry, $base_id) use ($repository_id) {
+          return $this->deriverPluginReducer($carry, $base_id, $repository_id);
+        }
+      );
+    }
+    if ($instance) {
+      return $instance;
+    }
+    // If we could not find a repository, try with one for the entity type.
+    if (strpos($repository_id, TypedRepositoryInterface::ID_PARTS_SEPARATOR) !== FALSE) {
+      // This removes the last part of the ID, leaving the deriver and entity
+      // type ID intact. `lorem:ipsum.dolor` -> `lorem:ipsum`.
+      [$new_repository_id] = explode(TypedRepositoryInterface::ID_PARTS_SEPARATOR, $repository_id, 2);
+      return $this->get($new_repository_id);
+    }
+    return NULL;
+  }
+
+  /**
+   * Reducer to find the first plugin object based on a deriver base ID.
+   *
+   * @param object|null $plugin
+   *   The plugin object.
+   * @param string $base_id
+   *   The base ID.
+   * @param string $repository_id
+   *   The repository ID.
+   *
+   * @return \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface|null
+   *   The plugin object.
+   */
+  private function deriverPluginReducer(
+    ?object $plugin,
+    string $base_id,
+    string $repository_id
+  ): ?TypedRepositoryInterface {
+    if ($plugin) {
+      return $plugin;
+    }
+    $plugin_id = sprintf(
+      '%s%s%s',
+      $base_id,
+      TypedRepositoryBase::DERIVATIVE_SEPARATOR,
+      $repository_id
+    );
+    try {
+      $instance = $this->pluginManager->createInstance($plugin_id, []);
+      return $instance instanceof TypedRepositoryInterface ? $instance : NULL;
+    }
+    catch (PluginException $exception) {
       return NULL;
     }
-    return $instance instanceof TypedRepositoryInterface
-      ? $instance
-      : NULL;
+  }
+
+  /**
+   * Extracts all the derivers from the list of registered plugins.
+   *
+   * @return array
+   *   The deriver base IDs for the typed repository plugin type.
+   */
+  protected function extractDeriverBaseIds(): array {
+    if (isset($this->deriverBaseIds)) {
+      return $this->deriverBaseIds;
+    }
+    $definitions = $this->pluginManager->getDefinitions();
+    $ids = array_keys($definitions);
+    $deriver_plugin_ids = array_filter($ids, function (string $id) {
+      return strpos($id, TypedRepositoryBase::DERIVATIVE_SEPARATOR) !== FALSE;
+    });
+    $deriver_base_ids = array_map(function (string $id) {
+      [$base] = explode(TypedRepositoryBase::DERIVATIVE_SEPARATOR, $id, 2);
+      return $base;
+    }, $deriver_plugin_ids);
+    $this->deriverBaseIds = array_unique($deriver_base_ids);
+    return $this->deriverBaseIds;
   }
 
   /**
@@ -87,10 +169,7 @@ class RepositoryManager implements EntityWrapperInterface {
    *   The repository for the entity.
    */
   public function repository(string $entity_type_id, string $bundle = ''): ?TypedRepositoryInterface {
-    $identifier = implode(
-      TypedRepositoryBase::SEPARATOR,
-      array_filter([$entity_type_id, $bundle])
-    );
+    $identifier = TypedRepositoryBase::generatePluginId($entity_type_id, $bundle);
     return $this->get($identifier);
   }
 
@@ -99,13 +178,6 @@ class RepositoryManager implements EntityWrapperInterface {
    */
   public function wrap(EntityInterface $entity): ?WrappedEntityInterface {
     $repository = $this->repositoryFromEntity($entity);
-    if (!$repository) {
-      // Maybe there is a repository for all bundles.
-      $repository = $this->repository($entity->getEntityTypeId());
-      if (!$repository) {
-        return NULL;
-      }
-    }
     return $repository->wrap($entity);
   }
 

@@ -18,7 +18,20 @@ interface TypedRepositoryInterface extends EntityWrapperInterface {
    *
    * @var string
    */
-  const SEPARATOR = ':';
+  const ID_PARTS_SEPARATOR = '.';
+
+  /**
+   * Generate a plugin ID based on an entity type and bundle.
+   *
+   * @param string $entity_type_id
+   *   The entity type.
+   * @param string $bundle
+   *   The entity bundle.
+   *
+   * @return string
+   *   The plugin ID.
+   */
+  public static function generatePluginId(string $entity_type_id, string $bundle = ''): string;
 
   /**
    * Gets a query to start finding items.
