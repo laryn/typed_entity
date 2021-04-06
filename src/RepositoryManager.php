@@ -178,6 +178,9 @@ class RepositoryManager implements EntityWrapperInterface {
    */
   public function wrap(EntityInterface $entity): ?WrappedEntityInterface {
     $repository = $this->repositoryFromEntity($entity);
+    if (!$repository) {
+      return NULL;
+    }
     return $repository->wrap($entity);
   }
 
