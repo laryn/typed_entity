@@ -12,3 +12,14 @@ php_class_summary:
   css:
     theme:
       css/typed_entity_ui.php_class_summary.css: {}
+
+admin:
+  css:
+    theme:
+      css/typed_entity_ui.admin.css: {}
+  js:
+    js/typed_entity_ui.admin.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/jquery.once

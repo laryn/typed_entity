@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\RepositoryManager;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -97,12 +98,7 @@ class ExploreDetails extends ControllerBase {
    *   The render array.
    */
   public function __invoke(string $typed_entity_id): array {
-    $bundle = '';
-    $entity_type_id = $typed_entity_id;
-    if (strpos($typed_entity_id, '.') !== FALSE) {
-      [$entity_type_id, $bundle] = explode('.', $typed_entity_id, 2);
-    }
-    $repository = $this->repositoryManager->repository($entity_type_id, $bundle ?? '');
+    $repository = $this->repositoryManager->get($typed_entity_id);
     if (!$repository instanceof TypedRepositoryInterface) {
       return $this->getNotFoundOutput($typed_entity_id);
     }
@@ -112,7 +108,6 @@ class ExploreDetails extends ControllerBase {
     $renderers = $definition['renderers'] ?? NULL;
     $description = $definition['description'] ?? NULL;
 
-    $reflection_repo = new \ReflectionClass($repository);
     return [
       [
         '#type' => 'html_tag',
@@ -126,7 +121,7 @@ class ExploreDetails extends ControllerBase {
       ],
       [
         '#theme' => 'php_class_info',
-        '#reflection' => $reflection_repo,
+        '#class_name' => get_class($repository),
       ],
       [
         '#type' => 'html_tag',
@@ -163,8 +158,14 @@ class ExploreDetails extends ControllerBase {
   protected function getLabels(string $typed_entity_id): array {
     $bundle = '';
     $entity_type_id = $typed_entity_id;
-    if (strpos($typed_entity_id, '.') !== FALSE) {
-      [$entity_type_id, $bundle] = explode('.', $typed_entity_id, 2);
+    // Clean up any possible derivative information.
+    $input = preg_replace(
+      '/^.*' . TypedRepositoryBase::DERIVATIVE_SEPARATOR . '/',
+      '',
+      $typed_entity_id
+    );
+    if (strpos($input, '.') !== FALSE) {
+      [$entity_type_id, $bundle] = explode('.', $input, 2);
     }
     try {
       $entity_type_label = $this->entityTypeManager

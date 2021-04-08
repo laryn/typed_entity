@@ -9,6 +9,11 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\typed_entity\RepositoryManager;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
+use Drupal\typed_entity\TypedRepositoryPluginManager;
+use Drupal\typed_entity_ui\Form\RepositoryTable\BuildRepositoryTableService;
+use Drupal\typed_entity_ui\Form\RepositoryTable\RepositoryTableRequest;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -33,16 +38,26 @@ class ExploreForm extends FormBase {
   protected $bundleInfo;
 
   /**
+   * The plugin manager.
+   *
+   * @var \Drupal\typed_entity\RepositoryManager
+   */
+  protected $repositoryManager;
+
+  /**
    * Constructs a new Explore form form.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo
    *   The entity type bundle info service for discovering entity type bundles.
+   * @param \Drupal\typed_entity\RepositoryManager $repository_manager
+   *   The plugin manager.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityTypeBundleInfoInterface $bundleInfo) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityTypeBundleInfoInterface $bundleInfo, RepositoryManager $repository_manager) {
     $this->entityTypeManager = $entityTypeManager;
     $this->bundleInfo = $bundleInfo;
+    $this->repositoryManager = $repository_manager;
   }
 
   /**
@@ -51,7 +66,8 @@ class ExploreForm extends FormBase {
   public static function create(ContainerInterface $container): self {
     return new static(
       $container->get('entity_type.manager'),
-      $container->get('entity_type.bundle.info')
+      $container->get('entity_type.bundle.info'),
+      $container->get(RepositoryManager::class)
     );
   }
 
@@ -96,7 +112,7 @@ class ExploreForm extends FormBase {
     // Add a submit button that handles the submission of the form.
     $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Submit'),
+      '#value' => $this->t('Explore'),
     ];
 
     $form['bundle_wrapper'] = [
@@ -128,7 +144,31 @@ class ExploreForm extends FormBase {
         ];
       }
     }
-
+    $table_builder = new BuildRepositoryTableService();
+    $as_request = new RepositoryTableRequest($this->repositoryManager);
+    $title = $this->t('Filter typed repositories by plugin ID.');
+    $form['table'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Available Repositories'),
+      '#description' => $this->t('All the available repositories registered in the application. If you just created a new typed repository but it is not listed here try clearing caches.'),
+      '#open' => TRUE,
+      '#weight' => 101,
+      'search' => [
+        '#type' => 'search',
+        '#title' => $this->t('Filter'),
+        '#placeholder' => $title,
+        '#attributes' => [
+          'class' => ['typed-repositories-filter-text'],
+          'data-table' => 'table#edit-data',
+          'autocomplete' => 'off',
+          'title' => $title,
+        ],
+        '#attached' => [
+          'library' => ['typed_entity_ui/admin'],
+        ],
+      ],
+      'data' => $table_builder->execute($as_request)->getBuild(),
+    ];
     return $form;
   }
 
@@ -159,7 +199,7 @@ class ExploreForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $typed_entity_id = implode(
-      '.',
+      TypedRepositoryBase::ID_PARTS_SEPARATOR,
       array_filter([
         $form_state->getValue('entity_type_id'),
         $form_state->getValue('bundle'),

@@ -14,7 +14,7 @@ function typed_entity_ui_theme($existing, $type, $theme, $path): array {
   return [
     'php_class_info' => [
       'variables' => [
-        'reflection' => NULL,
+        'class_name' => NULL,
       ],
     ],
     'class_with_variants' => [
@@ -26,6 +26,8 @@ function typed_entity_ui_theme($existing, $type, $theme, $path): array {
     'php_class_summary' => [
       'variables' => [
         'class_name' => NULL,
+        'with_comment' => TRUE,
+        'with_fqn' => TRUE,
       ],
     ],
   ];
@@ -40,16 +42,21 @@ function typed_entity_ui_theme($existing, $type, $theme, $path): array {
  *   An associative array containing the variables.
  */
 function template_preprocess_php_class_info(array &$variables) {
-  $reflection = $variables['reflection'];
-  assert($reflection instanceof ReflectionClass);
+  $class_name = $variables['class_name'] ?? '';
+  try {
+    $reflection = new \ReflectionClass($class_name);
+  }
+  catch (ReflectionException $e) {
+    return;
+  }
   $variables['name'] = [
     '#theme' => 'php_class_summary',
-    '#class_name' => $reflection->getName()
+    '#class_name' => $reflection->getName(),
   ];
   $variables['parent'] = $reflection->getParentClass()
     ? [
       '#theme' => 'php_class_summary',
-      '#class_name' => $reflection->getParentClass()->getName()
+      '#class_name' => $reflection->getParentClass()->getName(),
     ]
     : '';
   $variables['interfaces'] = [
@@ -111,11 +118,23 @@ function template_preprocess_class_with_variants(array &$variables) {
  */
 function template_preprocess_php_class_summary(&$variables) {
   $class_name = $variables['class_name'] ?? '';
-  $reflection = new \ReflectionClass($class_name);
-  $variables['doc'] = $reflection->getDocComment();
-  $variables['keyword'] = $reflection->isFinal() ? 'final class ' : 'class ';
-  $variables['namespace'] = $reflection->getNamespaceName() . '\\';
+  try {
+    $reflection = new \ReflectionClass($class_name);
+  }
+  catch (ReflectionException $e) {
+    return;
+  }
+  if ($variables['with_comment']) {
+    $variables['doc'] = $reflection->getDocComment();
+  }
+  if ($variables['with_fqn']) {
+    $variables['keyword'] = $reflection->isFinal() ? 'final class ' : 'class ';
+    $variables['namespace'] = $reflection->getNamespaceName() . '\\';
+  }
   $variables['name'] = $reflection->getShortName();
-  $variables['class_file'] = t('File: @filename', ['@filename' => $reflection->getFileName()]);
+  $file_name = $reflection->getFileName();
+  $regexp = preg_quote(DRUPAL_ROOT, '@');
+  $file_name = preg_replace('@' . $regexp . '@', '<DRUPAL_ROOT>', $file_name);
+  $variables['class_file'] = t('File: @filename', ['@filename' => $file_name]);
   $variables['attributes'] = ['class' => ['php-class-summary']];
 }

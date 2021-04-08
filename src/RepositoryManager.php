@@ -49,6 +49,21 @@ class RepositoryManager implements EntityWrapperInterface {
   }
 
   /**
+   * Get all the repositories.
+   *
+   * @return \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface[]
+   *   The repositories.
+   *
+   * @see get
+   */
+  public function getAll(): array {
+    $definitions = $this->pluginManager->getDefinitions();
+    return array_filter(
+      array_map([$this, 'get'], array_keys($definitions))
+    );
+  }
+
+  /**
    * Get a repository.
    *
    * If more than one deriver declares the same pair of entity_type and bundle,

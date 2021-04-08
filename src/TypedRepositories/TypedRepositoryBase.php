@@ -5,6 +5,7 @@ namespace Drupal\typed_entity\TypedRepositories;
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
@@ -129,7 +130,7 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    * @SuppressWarnings(PHPMD.ShortMethodName)
    */
   public function id(): string {
-    return static::generatePluginId($this->entityType->id(), $this->bundle);
+    return static::generatePluginId($this->entityType->id(), $this->bundle ?: '');
   }
 
   /**
@@ -276,6 +277,20 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
     };
     $accessible_entities = array_filter($entities, $check_access);
     return $this->wrapMultiple($accessible_entities);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntityType(): EntityTypeInterface {
+    return $this->entityType;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBundle(): ?string {
+    return $this->bundle;
   }
 
 }

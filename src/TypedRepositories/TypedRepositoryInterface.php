@@ -2,6 +2,7 @@
 
 namespace Drupal\typed_entity\TypedRepositories;
 
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\typed_entity\EntityWrapperInterface;
 use Drupal\typed_entity\Render\TypedEntityRendererInterface;
@@ -80,5 +81,21 @@ interface TypedRepositoryInterface extends EntityWrapperInterface {
    *   The first renderer that applies.
    */
   public function rendererFactory(TypedEntityContext $context): ?TypedEntityRendererInterface;
+
+  /**
+   * The bundle, if any.
+   *
+   * @return string
+   *   The bundle.
+   */
+  public function getBundle(): ?string;
+
+  /**
+   * Get the entity type.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeInterface
+   *   The entity type.
+   */
+  public function getEntityType(): EntityTypeInterface;
 
 }
