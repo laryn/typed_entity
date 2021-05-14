@@ -2,7 +2,11 @@
 
 namespace Drupal\typed_entity_example\Plugin\TypedRepositories;
 
+use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Core\Access\AccessibleInterface;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\Query\ConditionInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 
 /**
@@ -19,13 +23,13 @@ use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
  *   ),
  *   renderers = @ClassWithVariants(
  *     variants = {
- *       "Drupal\typed_entity_example\Render\Article\Summary",
+ *       "Drupal\typed_entity_example\Render\Article\Full",
  *     }
  *   ),
  *   description = @Translation("Repository that holds business logic applicable to all articles.")
  * )
  */
-final class ArticleRepository extends TypedRepositoryBase {
+final class ArticleRepository extends TypedRepositoryBase implements AccessibleInterface {
 
   /**
    * The field that contains the data about the article tags.
@@ -34,6 +38,8 @@ final class ArticleRepository extends TypedRepositoryBase {
 
   /**
    * Finds article by tags.
+   *
+   * This method is not being used anywhere, this is here only as an example.
    *
    * @param string[] $tags
    *   The tags to search for.
@@ -46,6 +52,25 @@ final class ArticleRepository extends TypedRepositoryBase {
   public function findByTags(array $tags): array {
     $items = $this->findItemsByTags($tags);
     return $this->wrapMultipleById($items);
+  }
+
+  /**
+   * Counts the number of published articles.
+   *
+   * @return int
+   *   The number of published articles.
+   */
+  private function countPublishedEntities(): int {
+    try {
+      $query = $this->getQuery();
+    }
+    catch (PluginException $e) {
+      return 0;
+    }
+    return $query
+      ->condition('status', TRUE)
+      ->count()
+      ->execute();
   }
 
   /**
@@ -74,6 +99,15 @@ final class ArticleRepository extends TypedRepositoryBase {
     return $query
       ->condition($orGroup)
       ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    return $this->countPublishedEntities() > 8
+      ? AccessResult::forbidden('More than eight articles is forbidden.')
+      : AccessResult::neutral();
   }
 
 }

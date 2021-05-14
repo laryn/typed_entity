@@ -2,6 +2,7 @@
 
 namespace Drupal\typed_entity_example\WrappedEntities;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
@@ -25,20 +26,33 @@ final class BakingArticle extends Article {
   }
 
   /**
+   * Fake service that checks for inappropriate words.
+   *
+   * @pararm string $input
+   *   The string to check.
+   *
+   * @return bool
+   *   TRUE if it contains inappropriate language.
+   */
+  protected function checkInappropriateLanguage(string $input): bool {
+    $forbidden_words = ['flat', 'unfluffy'];
+    return array_reduce($forbidden_words, function ($found, $forbidden_word) use ($input) {
+      return $found || preg_match('/' . preg_quote($forbidden_word, '/') . '/', $input);
+    }, FALSE);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function applies(TypedEntityContext $context): bool {
-    $condition = new FieldValueVariantCondition(
-      ArticleRepository::FIELD_TAGS_NAME,
-      24,
-      $context
-    );
-    try {
-      return $condition->evaluate();
-    }
-    catch (InvalidValueException $exception) {
+    $entity = $context->offsetGet('entity');
+    if ($entity instanceof EntityInterface) {
       return FALSE;
     }
+    return in_array(
+      ['Baking', 'Baked'],
+      $entity->{ArticleRepository::FIELD_TAGS_NAME}->entity->getName()
+    );
   }
 
 }

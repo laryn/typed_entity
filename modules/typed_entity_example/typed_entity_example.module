@@ -5,10 +5,10 @@
  * Module implementation file.
  */
 
+use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\typed_entity_example\Plugin\TypedRepositories\ArticleRepository;
 
 /**
  * Implements hook_entity_access().
@@ -20,32 +20,17 @@ use Drupal\typed_entity_example\Plugin\TypedRepositories\ArticleRepository;
  * @see https://www.lullabot.com/articles/maintainable-code-drupal-wrapped-entities
  */
 function typed_entity_example_entity_access(EntityInterface $entity, $operation, AccountInterface $account) {
-  $repository_manager = typed_entity_repository_manager();
-  $repository = $repository_manager->repositoryFromEntity($entity);
-  if (!$repository instanceof ArticleRepository) {
+  $repository = typed_entity_repository_manager()->repositoryFromEntity($entity);
+  if (!$repository instanceof AccessibleInterface) {
     return AccessResult::neutral();
   }
-  $tagged_articles = $repository->findByTags(['Vegetarian', 'heaLthy', 'Baking']);
-  if (count($tagged_articles) > 10000) {
-    return AccessResult::forbidden('According to our requirements too many related articles causes access denied.');
+  $access = $repository->access($operation, $account, TRUE);
+  if (!$access->isNeutral()) {
+    return $access;
   }
-  $nickname = $repository_manager->wrap($entity)
-    ->owner()
-    ->nickname();
-  return _typed_entity_example_check_inappropriate_language($nickname)
-    ? AccessResult::forbidden('Nickname of the article\'s author is not appropriate.')
-    : AccessResult::neutral();
-}
-
-/**
- * Fake service that checks for inappropriate words.
- *
- * @pararm string $input
- *   The string to check.
- *
- * @return bool
- *   TRUE if it contains inappropriate language.
- */
-function _typed_entity_example_check_inappropriate_language(string $input): bool {
-  return FALSE;
+  $wrapped = $repository->wrap($entity);
+  if (!$wrapped instanceof AccessibleInterface) {
+    return AccessResult::neutral();
+  }
+  return $wrapped->access($operation, $account, TRUE);
 }

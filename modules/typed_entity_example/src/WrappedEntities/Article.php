@@ -2,8 +2,11 @@
 
 namespace Drupal\typed_entity_example\WrappedEntities;
 
+use Drupal\Core\Access\AccessibleInterface;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -11,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * The wrapped entity for the article content type.
  */
-class Article extends WrappedEntityBase {
+class Article extends WrappedEntityBase implements AccessibleInterface {
 
   /**
    * The messenger.
@@ -49,9 +52,38 @@ class Article extends WrappedEntityBase {
    * This is only overridden for educational purposes.
    */
   public function owner(): ?WrappedEntityInterface {
-    $message = 'The owner was accessed for article:' . $this->getEntity()->id();
+    $owner = parent::owner();
+    $message = 'The owner ' . $owner->nickname() . ' was accessed for article: ' . $this->getEntity()->id();
     $this->messenger->addMessage($message);
-    return parent::owner();
+    return $owner;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    $owner = $this->owner();
+    assert($owner instanceof User);
+    $nickname = $owner->nickname();
+    return $this->checkInappropriateLanguage($nickname)
+      ? AccessResult::forbidden('Nickname of the article\'s author is not appropriate.')
+      : AccessResult::neutral();
+  }
+
+  /**
+   * Fake service that checks for inappropriate words.
+   *
+   * @pararm string $input
+   *   The string to check.
+   *
+   * @return bool
+   *   TRUE if it contains inappropriate language.
+   */
+  protected function checkInappropriateLanguage(string $input): bool {
+    $forbidden_words = ['synergy', 'disruption'];
+    return array_reduce($forbidden_words, function ($found, $forbidden_word) use ($input) {
+      return $found || preg_match('/' . preg_quote($forbidden_word, '/') . '/', $input);
+    }, FALSE);
   }
 
 }
