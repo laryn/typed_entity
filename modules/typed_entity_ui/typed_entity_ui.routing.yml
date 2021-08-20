@@ -13,3 +13,10 @@ typed_entity_ui.details:
     _title_callback: '\Drupal\typed_entity_ui\Controller\ExploreDetails::title'
   requirements:
     _permission: 'explore typed entity classes'
+
+typed_entity_ui.hide_video:
+  path: '/admin/config/development/typed-entity/hide-video'
+  defaults:
+    _controller: '\Drupal\typed_entity_ui\Controller\ExploreDetails::hideVideo'
+  requirements:
+    _permission: 'access content'

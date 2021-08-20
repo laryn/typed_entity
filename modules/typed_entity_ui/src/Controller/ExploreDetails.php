@@ -5,14 +5,18 @@ namespace Drupal\typed_entity_ui\Controller;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Component\Render\MarkupInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\RemoveCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Url;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
+use Drupal\typed_entity_ui\Form\ExploreForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -194,6 +198,7 @@ class ExploreDetails extends ControllerBase {
   protected function getNotFoundOutput(string $typed_entity_id): array {
     [$entity_type_label, $bundle_label] = $this->getLabels($typed_entity_id);
     return [
+      $this->state()->get('typed_entity_ui.hide_video_thumbnail', FALSE) ? [] : ExploreForm::getDocLinks(),
       [
         '#type' => 'html_tag',
         '#tag' => 'h2',
@@ -215,6 +220,19 @@ class ExploreDetails extends ControllerBase {
         ]),
       ],
     ];
+  }
+
+  /**
+   * Hides the video thumbnail for admin interfaces.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   */
+  public function hideVideo() {
+    // Remember decision.
+    $this->state()->set('typed_entity_ui.hide_video_thumbnail', TRUE);
+    $response = new AjaxResponse();
+    $response->addCommand(new RemoveCommand('#video-thumbnail'));
+    return $response;
   }
 
 }

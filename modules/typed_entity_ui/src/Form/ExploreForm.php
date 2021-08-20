@@ -9,6 +9,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\State\StateInterface;
+use Drupal\Core\Url;
 use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 use Drupal\typed_entity\TypedRepositoryPluginManager;
@@ -45,7 +47,14 @@ class ExploreForm extends FormBase {
   protected $repositoryManager;
 
   /**
-   * Constructs a new Explore form form.
+   * The state service.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  private $state;
+
+  /**
+   * Constructs a new Explore form.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
@@ -53,11 +62,14 @@ class ExploreForm extends FormBase {
    *   The entity type bundle info service for discovering entity type bundles.
    * @param \Drupal\typed_entity\RepositoryManager $repository_manager
    *   The plugin manager.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state interface.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityTypeBundleInfoInterface $bundleInfo, RepositoryManager $repository_manager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityTypeBundleInfoInterface $bundleInfo, RepositoryManager $repository_manager, StateInterface $state) {
     $this->entityTypeManager = $entityTypeManager;
     $this->bundleInfo = $bundleInfo;
     $this->repositoryManager = $repository_manager;
+    $this->state = $state;
   }
 
   /**
@@ -67,7 +79,8 @@ class ExploreForm extends FormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
-      $container->get(RepositoryManager::class)
+      $container->get(RepositoryManager::class),
+      $container->get('state')
     );
   }
 
@@ -89,6 +102,10 @@ class ExploreForm extends FormBase {
       $carry[$entity_type->id()] = $entity_type->getLabel();
       return $carry;
     }, []);
+
+    if ($this->state && !$this->state->get('typed_entity_ui.hide_video_thumbnail', FALSE)) {
+      $form['doc_links'] = static::getDocLinks();
+    };
 
     $form['entity_type_id'] = [
       '#title' => $this->t('Entity Type'),
@@ -208,6 +225,48 @@ class ExploreForm extends FormBase {
       'typed_entity_ui.details',
       ['typed_entity_id' => $typed_entity_id]
     );
+  }
+
+  /**
+   * Generates the render array for the documentation links.
+   *
+   * @return array
+   *   The render array.
+   */
+  public static function getDocLinks(): array {
+    return [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'video-thumbnail'],
+      [
+        '#type' => 'link',
+        '#url' => Url::fromUri('https://video.mateuaguilo.com/w/exgsNqCSQZ6antJXjDGXc9'),
+        '#title' => [
+          '#theme' => 'image',
+          '#uri' => drupal_get_path('module', 'typed_entity_ui') . '/assets/video-series.png',
+          '#alt' => 'Screenshot of the video preview',
+          '#width' => '350',
+        ],
+        '#attributes' => ['target' => '_blank'],
+      ],
+      [
+        '#type' => 'link',
+        '#url' => Url::fromUri('https://www.lullabot.com/articles/write-better-code-typed-entity'),
+        '#title' => t('Read it in text form.'),
+        '#attributes' => ['class' => ['fake-button'], 'target' => '_blank'],
+      ],
+      [
+        '#type' => 'link',
+        '#url' => Url::fromRoute('typed_entity_ui.hide_video'),
+        '#title' => t('Hide this.'),
+        '#attributes' => ['class' => ['use-ajax', 'hide-video']],
+        '#attached' => [
+          'library' => [
+            'core/drupal.ajax',
+            'typed_entity_ui/admin',
+          ],
+        ],
+      ],
+    ];
   }
 
 }
