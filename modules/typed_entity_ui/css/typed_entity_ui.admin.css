@@ -4,3 +4,38 @@ td.plugin-id span {
   border-radius: 3px;
   font-weight: bold;
 }
+
+#video-thumbnail {
+  position: relative;
+  float: right;
+  background-color: white;
+  border: 1px solid #DDD;
+  padding: 0;
+  margin-top: -0.5rem;
+  margin-right: -0.5rem;
+  z-index: 1;
+  text-align: center;
+  box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.3);
+}
+#video-thumbnail a { display: block }
+#video-thumbnail .fake-button {
+  font-weight: bold;
+  padding: 1rem;
+}
+
+.hide-video {
+  position: absolute;
+  display: block;
+  width: 20px;
+  height: 20px;
+  top: 5px;
+  left: 325px;
+  overflow: hidden;
+  background-image: url('../assets/close.svg');
+}
+
+.hide-video,
+.hide-video:hover,
+.hide-video:visited {
+  color: rgba(0, 0, 0, 0);
+}

@@ -29,8 +29,8 @@ class BuildRepositoryTableService {
       '#title' => $this->t('Available Typed Repositories'),
       '#rows' => $this->buildRows($request->getAllTypedRepositories()),
       '#empty' => $this->t(
-        'There are no typed repositories yet. Check the <a href="!link">documentation</a> to learn how to create one.',
-        ['!link' => 'https://www.drupal.org/project/typed_entity']
+        'There are no typed repositories yet. Check the <a href="@link">documentation</a> to learn how to create one.',
+        ['@link' => 'https://www.drupal.org/project/typed_entity']
       ),
 //      '#cache' => [
 //        'contexts' => $this->entityType->getListCacheContexts(),
