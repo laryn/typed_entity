@@ -293,4 +293,20 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
     return $this->bundle;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function createEntity(array $values = []): WrappedEntityInterface {
+    // Autoset the bundle key, if the typed repository has a bundle and the
+    // entity type supports bundles.
+    $bundle_key = $this->entityType->getKey('bundle');
+    if ($this->bundle && $bundle_key && empty($values[$bundle_key])) {
+      $values[$bundle_key] = $this->bundle;
+    }
+
+    return $this->wrap($this->entityTypeManager
+      ->getStorage($this->entityType->id())
+      ->create($values));
+  }
+
 }

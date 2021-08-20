@@ -98,4 +98,17 @@ interface TypedRepositoryInterface extends EntityWrapperInterface {
    */
   public function getEntityType(): EntityTypeInterface;
 
+  /**
+   * Creates and wraps an entity.
+   *
+   * @param array $values
+   *   An array of values to set.
+   *   The bundle is automatically set, if the entity supports it and the typed
+   *   repository has one set.
+   *
+   * @return \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface
+   *   The wrapped entity.
+   */
+  public function createEntity(array $values = []): WrappedEntityInterface;
+
 }
