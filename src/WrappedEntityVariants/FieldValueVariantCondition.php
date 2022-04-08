@@ -19,7 +19,7 @@ class FieldValueVariantCondition extends VariantConditionBase {
    *
    * @var string
    */
-  protected $fieldName = '';
+  protected string $fieldName = '';
 
   /**
    * The value to check for.
@@ -64,14 +64,14 @@ class FieldValueVariantCondition extends VariantConditionBase {
     }
     $this->validateContext();
     $entity = $this->context->offsetGet('entity');
-    assert($entity instanceof FieldableEntityInterface);
+    \assert($entity instanceof FieldableEntityInterface);
     // Check if the any of the values for the field match the configured value.
     $values = $entity->get($this->fieldName)->getValue();
     // @todo inject the field manager for testability.
     $field_manager = \Drupal::service('entity_field.manager');
-    assert($field_manager instanceof EntityFieldManager);
+    \assert($field_manager instanceof EntityFieldManager);
     $definition = $field_manager->getFieldStorageDefinitions($entity->getEntityTypeId())[$this->fieldName];
-    assert($definition instanceof FieldStorageDefinitionInterface);
+    \assert($definition instanceof FieldStorageDefinitionInterface);
     $main_property = $definition->getMainPropertyName();
     $result = array_reduce($values, function ($carry, $value) use ($main_property) {
       return $carry || ($value[$main_property] ?? NULL) == $this->value;

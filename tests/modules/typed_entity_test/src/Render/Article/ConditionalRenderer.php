@@ -18,7 +18,7 @@ final class ConditionalRenderer extends TypedEntityRendererBase {
    *
    * @var \Drupal\Core\State\StateInterface
    */
-  private $state;
+  private StateInterface $state;
 
   /**
    * {@inheritdoc}

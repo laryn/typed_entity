@@ -21,7 +21,7 @@ class FullTest extends UnitTestCase {
    *
    * @covers ::preprocess
    */
-  public function testPreprocess() {
+  public function testPreprocess(): void {
     $entity_type_manager = $this->prophesize(EntityTypeManagerInterface::class);
     $fake_wrapped_entity = $this->prophesize(WrappedEntityInterface::class);
     $renderer = new Full($entity_type_manager->reveal());

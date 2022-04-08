@@ -3,7 +3,6 @@
 namespace Drupal\Tests\typed_entity\Kernel;
 
 use Drupal\node\Entity\Node;
-use Drupal\typed_entity\RepositoryManager;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 use Drupal\typed_entity_test\Plugin\TypedRepositories\ArticleRepository;
 use Drupal\typed_entity_test\WrappedEntities\Article;
@@ -22,15 +21,13 @@ class RepositoryManagerTest extends KernelTestBase {
    *
    * @covers ::repository
    */
-  public function testRepository() {
+  public function testRepository(): void {
     $manager = typed_entity_repository_manager();
-    assert($manager instanceof RepositoryManager);
-
     $repository = $manager->repository('node', 'article');
-    $this->assert($repository instanceof ArticleRepository);
+    $this->assertInstanceOf(ArticleRepository::class, $repository);
 
     $repository = $manager->repository('node', 'page');
-    $this->assert($repository instanceof TypedRepositoryBase);
+    $this->assertInstanceOf(TypedRepositoryBase::class, $repository);
 
     static::assertNull($manager->repository('foo', 'bar'));
   }
@@ -39,8 +36,10 @@ class RepositoryManagerTest extends KernelTestBase {
    * Test the repositoryFromEntity method.
    *
    * @covers ::repositoryFromEntity
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testRepositoryFromEntity() {
+  public function testRepositoryFromEntity(): void {
     $node = Node::create([
       'type' => 'article',
       'title' => $this->randomMachineName(),
@@ -48,18 +47,18 @@ class RepositoryManagerTest extends KernelTestBase {
     $node->save();
 
     $manager = typed_entity_repository_manager();
-    assert($manager instanceof RepositoryManager);
-
     $repository = $manager->repositoryFromEntity($node);
-    $this->assert($repository instanceof ArticleRepository);
+    $this->assertInstanceOf(ArticleRepository::class, $repository);
   }
 
   /**
    * Test the wrap method.
    *
    * @covers ::wrap
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testWrap() {
+  public function testWrap(): void {
     $node = Node::create([
       'type' => 'article',
       'title' => $this->randomMachineName(),
@@ -67,24 +66,22 @@ class RepositoryManagerTest extends KernelTestBase {
     $node->save();
 
     $manager = typed_entity_repository_manager();
-    assert($manager instanceof RepositoryManager);
-
     $article_wrapper = $manager->wrap($node);
-    $this->assert($article_wrapper instanceof Article);
+    $this->assertInstanceOf(Article::class, $article_wrapper);
   }
 
   /**
    * Test the wrapMultiple method.
    *
    * @covers ::wrapMultiple
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testWrapMultiple() {
+  public function testWrapMultiple(): void {
     $manager = typed_entity_repository_manager();
-    assert($manager instanceof RepositoryManager);
-
     $article_wrappers = $manager->wrapMultiple($this->createArticles());
     foreach ($article_wrappers as $article_wrapper) {
-      $this->assert($article_wrapper instanceof Article);
+      $this->assertInstanceOf(Article::class, $article_wrapper);
     }
   }
 

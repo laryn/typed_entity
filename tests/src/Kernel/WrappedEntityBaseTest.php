@@ -33,8 +33,10 @@ class WrappedEntityBaseTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->createEntityReferenceField('node', 'article', 'field_related_pages', 'Related Pages', 'node');
@@ -53,7 +55,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
    *
    * @covers ::getEntity
    */
-  public function testGetEntity() {
+  public function testGetEntity(): void {
     $entity = $this->wrapper->getEntity();
     static::assertEquals($entity->id(), $this->node->id());
   }
@@ -63,7 +65,7 @@ class WrappedEntityBaseTest extends KernelTestBase {
    *
    * @covers ::label
    */
-  public function testLabel() {
+  public function testLabel(): void {
     static::assertSame($this->wrapper->label(), $this->node->label());
   }
 
@@ -71,8 +73,10 @@ class WrappedEntityBaseTest extends KernelTestBase {
    * Test the wrapReferences method.
    *
    * @covers ::wrapReferences
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testWrapReferences() {
+  public function testWrapReferences(): void {
     $page = Node::create([
       'type' => 'page',
       'title' => $this->randomMachineName(),
@@ -107,8 +111,10 @@ class WrappedEntityBaseTest extends KernelTestBase {
    * Test the wrapReference method.
    *
    * @covers ::wrapReference
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testWrapReference() {
+  public function testWrapReference(): void {
     static::assertNull($this->wrapper->wrapReference('field_related_pages'));
 
     $page = Node::create([

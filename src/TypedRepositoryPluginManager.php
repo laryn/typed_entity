@@ -5,6 +5,8 @@ namespace Drupal\typed_entity;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\typed_entity\Annotation\TypedRepository;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 
 /**
  * TypedEntityRepository plugin manager.
@@ -27,8 +29,8 @@ class TypedRepositoryPluginManager extends DefaultPluginManager {
       'Plugin/TypedRepositories',
       $namespaces,
       $module_handler,
-      'Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface',
-      'Drupal\typed_entity\Annotation\TypedRepository'
+      TypedRepositoryInterface::class,
+      TypedRepository::class
     );
     $this->alterInfo('typed_repository_info');
     $this->setCacheBackend($cache_backend, 'typed_repository_plugins');

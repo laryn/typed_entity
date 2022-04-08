@@ -12,8 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
 use Drupal\typed_entity\RepositoryManager;
-use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
-use Drupal\typed_entity\TypedRepositoryPluginManager;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 use Drupal\typed_entity_ui\Form\RepositoryTable\BuildRepositoryTableService;
 use Drupal\typed_entity_ui\Form\RepositoryTable\RepositoryTableRequest;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -30,28 +29,28 @@ class ExploreForm extends FormBase {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * The entity type bundle service to discover & retrieve entity type bundles.
    *
    * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
    */
-  protected $bundleInfo;
+  protected EntityTypeBundleInfoInterface $bundleInfo;
 
   /**
    * The plugin manager.
    *
    * @var \Drupal\typed_entity\RepositoryManager
    */
-  protected $repositoryManager;
+  protected RepositoryManager $repositoryManager;
 
   /**
    * The state service.
    *
    * @var \Drupal\Core\State\StateInterface
    */
-  private $state;
+  private StateInterface $state;
 
   /**
    * Constructs a new Explore form.
@@ -95,17 +94,17 @@ class ExploreForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    $content_entity_types = array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $entity_type) {
+    $content_entity_types = array_filter($this->entityTypeManager->getDefinitions(), static function (EntityTypeInterface $entity_type) {
       return $entity_type instanceof ContentEntityTypeInterface;
     });
-    $entity_types = array_reduce($content_entity_types, function ($carry, EntityTypeInterface $entity_type) {
+    $entity_types = array_reduce($content_entity_types, static function ($carry, EntityTypeInterface $entity_type) {
       $carry[$entity_type->id()] = $entity_type->getLabel();
       return $carry;
     }, []);
 
-    if ($this->state && !$this->state->get('typed_entity_ui.hide_video_thumbnail', FALSE)) {
+    if (!$this->state->get('typed_entity_ui.hide_video_thumbnail', FALSE)) {
       $form['doc_links'] = static::getDocLinks();
-    };
+    }
 
     $form['entity_type_id'] = [
       '#title' => $this->t('Entity Type'),
@@ -214,9 +213,9 @@ class ExploreForm extends FormBase {
    *
    * @SuppressWarnings(PHPMD.UnusedFormalParameter)
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $typed_entity_id = implode(
-      TypedRepositoryBase::ID_PARTS_SEPARATOR,
+      TypedRepositoryInterface::ID_PARTS_SEPARATOR,
       array_filter([
         $form_state->getValue('entity_type_id'),
         $form_state->getValue('bundle'),
@@ -234,6 +233,7 @@ class ExploreForm extends FormBase {
    *   The render array.
    */
   public static function getDocLinks(): array {
+    $resolver = \Drupal::service('extension.path.resolver');
     return [
       '#type' => 'container',
       '#attributes' => ['id' => 'video-thumbnail'],
@@ -242,7 +242,7 @@ class ExploreForm extends FormBase {
         '#url' => Url::fromUri('https://video.mateuaguilo.com/w/exgsNqCSQZ6antJXjDGXc9'),
         '#title' => [
           '#theme' => 'image',
-          '#uri' => drupal_get_path('module', 'typed_entity_ui') . '/assets/video-series.png',
+          '#uri' => $resolver->getPath('module', 'typed_entity_ui') . '/assets/video-series.png',
           '#alt' => 'Screenshot of the video preview',
           '#width' => '350',
         ],

@@ -19,8 +19,13 @@ class EmptyFieldVariantConditionTest extends KernelTestBase {
    * Test the evaluate method.
    *
    * @covers ::evaluate
+   *
+   * @throws \Drupal\typed_entity\InvalidValueException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\typed_entity\InvalidValueException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testEvalutate() {
+  public function testEvalutate(): void {
     $article = Node::create([
       'type' => 'article',
       'title' => $this->randomMachineName(),

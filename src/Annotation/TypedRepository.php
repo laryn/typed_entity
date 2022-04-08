@@ -17,14 +17,14 @@ class TypedRepository extends Plugin {
    *
    * @var string
    */
-  public $entity_type_id;
+  public string $entity_type_id;
 
   /**
    * The bundle.
    *
    * @var string
    */
-  public $bundle;
+  public string $bundle;
 
   /**
    * The description of the plugin.
@@ -33,7 +33,7 @@ class TypedRepository extends Plugin {
    *
    * @ingroup plugin_translatable
    */
-  public $description;
+  public \Drupal\Core\Annotation\Translation $description;
 
   /**
    * The available wrappers.
@@ -41,7 +41,7 @@ class TypedRepository extends Plugin {
    * @var \Drupal\typed_entity\Annotation\ClassWithVariants
    *   The wrapper with the variants.
    */
-  public $wrappers;
+  public ClassWithVariants $wrappers;
 
   /**
    * The available renderers.
@@ -49,7 +49,7 @@ class TypedRepository extends Plugin {
    * @var \Drupal\typed_entity\Annotation\ClassWithVariants
    *   The wrapper with the variants.
    */
-  public $renderers;
+  public ClassWithVariants $renderers;
 
   /**
    * {@inheritdoc}

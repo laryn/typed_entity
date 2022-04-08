@@ -21,7 +21,7 @@ class Article extends WrappedEntityBase implements AccessibleInterface {
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
    */
-  private $messenger;
+  private MessengerInterface $messenger;
 
   /**
    * Article constructor.
@@ -53,6 +53,9 @@ class Article extends WrappedEntityBase implements AccessibleInterface {
    */
   public function owner(): ?WrappedEntityInterface {
     $owner = parent::owner();
+    if (!$owner instanceof User) {
+      return NULL;
+    }
     $message = 'The owner ' . $owner->nickname() . ' was accessed for article: ' . $this->getEntity()->id();
     $this->messenger->addMessage($message);
     return $owner;
@@ -63,7 +66,7 @@ class Article extends WrappedEntityBase implements AccessibleInterface {
    */
   public function access($operation, AccountInterface $account = NULL, $return_as_object = FALSE) {
     $owner = $this->owner();
-    assert($owner instanceof User);
+    \assert($owner instanceof User);
     $nickname = $owner->nickname();
     return $this->checkInappropriateLanguage($nickname)
       ? AccessResult::forbidden('Nickname of the article\'s author is not appropriate.')
@@ -81,9 +84,11 @@ class Article extends WrappedEntityBase implements AccessibleInterface {
    */
   protected function checkInappropriateLanguage(string $input): bool {
     $forbidden_words = ['synergy', 'disruption'];
-    return array_reduce($forbidden_words, function ($found, $forbidden_word) use ($input) {
-      return $found || preg_match('/' . preg_quote($forbidden_word, '/') . '/', $input);
-    }, FALSE);
+    return array_reduce(
+      $forbidden_words,
+      static fn($found, $forbidden_word) => $found || preg_match('/' . preg_quote($forbidden_word, '/') . '/', $input),
+      FALSE
+    );
   }
 
 }

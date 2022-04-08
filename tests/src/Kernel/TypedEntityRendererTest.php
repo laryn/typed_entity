@@ -2,10 +2,13 @@
 
 namespace Drupal\Tests\typed_entity\Kernel;
 
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
+use Drupal\typed_entity_test\Plugin\TypedRepositories\ArticleRepository;
 use Drupal\typed_entity_test\Render\Article\ConditionalRenderer;
 use Drupal\typed_entity_test\Render\Article\Teaser;
 use Drupal\typed_entity_test\Render\Page\Base;
@@ -23,35 +26,32 @@ class TypedEntityRendererTest extends KernelTestBase {
   /**
    * A test article.
    *
-   * @var \Drupal\Core\Entity\EntityInterface
+   * @var \Drupal\Core\Entity\FieldableEntityInterface
    */
-  private $article;
+  private FieldableEntityInterface $article;
 
   /**
    * A test entity wrapper.
    *
-   * @var \Drupal\typed_entity_test\TypedRepositories\ArticleRepository
+   * @var \Drupal\typed_entity_test\Plugin\TypedRepositories\ArticleRepository
    */
-  private $articleRepository;
-
-  /**
-   * A test page.
-   *
-   * @var \Drupal\Core\Entity\EntityInterface
-   */
-  private $page;
+  private ArticleRepository $articleRepository;
 
   /**
    * A test entity wrapper.
    *
-   * @var \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface
+   * @var \Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface|null
    */
-  private $pageRepository;
+  private ?TypedRepositoryInterface $pageRepository;
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $article = NodeType::load('article');
@@ -67,14 +67,14 @@ class TypedEntityRendererTest extends KernelTestBase {
     $this->articleRepository = typed_entity_repository_manager()
       ->repositoryFromEntity($this->article);
 
-    $this->page = Node::create([
+    $page = Node::create([
       'type' => 'page',
       'title' => 'Test Page',
       'uid' => User::load(1),
     ]);
     $this->article->save();
     $this->pageRepository = typed_entity_repository_manager()
-      ->repositoryFromEntity($this->page);
+      ->repositoryFromEntity($page);
   }
 
   /**

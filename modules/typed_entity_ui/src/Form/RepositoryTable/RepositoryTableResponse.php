@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\typed_entity_ui\Form\RepositoryTable;
 
 /**
@@ -13,7 +12,7 @@ class RepositoryTableResponse {
    *
    * @var array
    */
-  protected $build = [];
+  protected array $build = [];
 
   /**
    * RepositoryTableResponse constructor.

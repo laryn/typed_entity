@@ -33,7 +33,7 @@ class EmptyFieldVariantCondition extends FieldValueVariantCondition {
   public function evaluate(): bool {
     $this->validateContext();
     $entity = $this->context->offsetGet('entity');
-    assert($entity instanceof FieldableEntityInterface);
+    \assert($entity instanceof FieldableEntityInterface);
     $is_empty = $entity->get($this->fieldName)->isEmpty();
     return $this->isNegated() ? !$is_empty : $is_empty;
   }

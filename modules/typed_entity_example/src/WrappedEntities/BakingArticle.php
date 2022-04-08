@@ -3,9 +3,7 @@
 namespace Drupal\typed_entity_example\WrappedEntities;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\TypedEntityContext;
-use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
 use Drupal\typed_entity_example\Plugin\TypedRepositories\ArticleRepository;
 
 /**
@@ -22,7 +20,7 @@ final class BakingArticle extends Article {
    *   Either yeast or baking soda.
    */
   public function yeastOrBakingSoda(): string {
-    return mt_rand(0, 1) ? 'yeast' : 'baking soda';
+    return random_int(0, 1) ? 'yeast' : 'baking soda';
   }
 
   /**
@@ -36,7 +34,7 @@ final class BakingArticle extends Article {
    */
   protected function checkInappropriateLanguage(string $input): bool {
     $forbidden_words = ['flat', 'unfluffy'];
-    return array_reduce($forbidden_words, function ($found, $forbidden_word) use ($input) {
+    return array_reduce($forbidden_words, static function ($found, $forbidden_word) use ($input) {
       return $found || preg_match('/' . preg_quote($forbidden_word, '/') . '/', $input);
     }, FALSE);
   }
@@ -49,10 +47,10 @@ final class BakingArticle extends Article {
     if ($entity instanceof EntityInterface) {
       return FALSE;
     }
-    return in_array(
-      ['Baking', 'Baked'],
-      $entity->{ArticleRepository::FIELD_TAGS_NAME}->entity->getName()
-    );
+    return in_array([
+      'Baking',
+      'Baked',
+    ], $entity->{ArticleRepository::FIELD_TAGS_NAME}->entity->getName(), TRUE);
   }
 
 }

@@ -3,6 +3,7 @@
 namespace Drupal\typed_entity_ui\Controller;
 
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\Component\Plugin\PluginBase;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Ajax\AjaxResponse;
@@ -10,10 +11,8 @@ use Drupal\Core\Ajax\RemoveCommand;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Url;
 use Drupal\typed_entity\Render\TypedEntityRendererBase;
 use Drupal\typed_entity\RepositoryManager;
-use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 use Drupal\typed_entity_ui\Form\ExploreForm;
@@ -25,25 +24,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ExploreDetails extends ControllerBase {
 
   /**
-   * The entity type manager to manage entity type plugin definitions.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * The entity type bundle service to discover & retrieve entity type bundles.
    *
    * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
    */
-  protected $bundleInfo;
+  protected EntityTypeBundleInfoInterface $bundleInfo;
 
   /**
    * The repository manager.
    *
    * @var \Drupal\typed_entity\RepositoryManager
    */
-  protected $repositoryManager;
+  protected RepositoryManager $repositoryManager;
 
   /**
    * Constructs a new EntityBundlePicker form.
@@ -106,7 +98,7 @@ class ExploreDetails extends ControllerBase {
     if (!$repository instanceof TypedRepositoryInterface) {
       return $this->getNotFoundOutput($typed_entity_id);
     }
-    assert($repository instanceof PluginInspectionInterface);
+    \assert($repository instanceof PluginInspectionInterface);
     $definition = $repository->getPluginDefinition();
     $wrappers = $definition['wrappers'] ?? NULL;
     $renderers = $definition['renderers'] ?? NULL;
@@ -125,7 +117,7 @@ class ExploreDetails extends ControllerBase {
       ],
       [
         '#theme' => 'php_class_info',
-        '#class_name' => get_class($repository),
+        '#class_name' => \get_class($repository),
       ],
       [
         '#type' => 'html_tag',
@@ -164,7 +156,7 @@ class ExploreDetails extends ControllerBase {
     $entity_type_id = $typed_entity_id;
     // Clean up any possible derivative information.
     $input = preg_replace(
-      '/^.*' . TypedRepositoryBase::DERIVATIVE_SEPARATOR . '/',
+      '/^.*' . PluginBase::DERIVATIVE_SEPARATOR . '/',
       '',
       $typed_entity_id
     );
@@ -226,8 +218,9 @@ class ExploreDetails extends ControllerBase {
    * Hides the video thumbnail for admin interfaces.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The response.
    */
-  public function hideVideo() {
+  public function hideVideo(): AjaxResponse {
     // Remember decision.
     $this->state()->set('typed_entity_ui.hide_video_thumbnail', TRUE);
     $response = new AjaxResponse();

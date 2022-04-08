@@ -3,7 +3,6 @@
 namespace Drupal\Tests\typed_entity\Kernel;
 
 use Drupal\node\Entity\Node;
-use Drupal\node\Entity\NodeType;
 use Drupal\typed_entity\InvalidValueException;
 use Drupal\typed_entity\TypedEntityContext;
 use Drupal\typed_entity\WrappedEntityVariants\FieldValueVariantCondition;
@@ -22,7 +21,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    *
    * @covers ::isNegated
    */
-  public function testIsNegated() {
+  public function testIsNegated(): void {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext());
     static::assertFalse($condition->isNegated());
 
@@ -34,8 +33,11 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    * Test the evaluate method.
    *
    * @covers ::evaluate
+   *
+   * @throws \Drupal\typed_entity\InvalidValueException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testEvalutate() {
+  public function testEvalutate(): void {
     $article = Node::create([
       'type' => 'article',
       'title' => $this->randomMachineName(),
@@ -59,7 +61,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    *
    * @covers ::summary
    */
-  public function testSummary() {
+  public function testSummary(): void {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext());
     $summary = 'Active when the <em class="placeholder">field_node_type</em> is <em class="placeholder">News</em>.';
     static::assertSame($condition->summary()->__toString(), $summary);
@@ -70,7 +72,7 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    *
    * @covers ::validateContext
    */
-  public function testValidateContextNoEntity() {
+  public function testValidateContextNoEntity(): void {
     $condition = new FieldValueVariantCondition('field_node_type', 'News', new TypedEntityContext(['entity' => '']));
 
     $this->expectException(InvalidValueException::class);
@@ -81,8 +83,10 @@ class FieldValueVariantConditionTest extends KernelTestBase {
    * Test the exception throwing of validateContext method.
    *
    * @covers ::validateContext
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testValidateContextNoField() {
+  public function testValidateContextNoField(): void {
     $node = Node::create([
       'type' => 'foo',
       'title' => $this->randomMachineName(),

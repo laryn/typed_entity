@@ -17,14 +17,14 @@ abstract class VariantConditionBase implements VariantConditionInterface {
    *
    * @var bool
    */
-  protected $isNegated = FALSE;
+  protected bool $isNegated = FALSE;
 
   /**
    * The context.
    *
    * @var \Drupal\typed_entity\TypedEntityContext
    */
-  protected $context;
+  protected TypedEntityContext $context;
 
   /**
    * VariantConditionBase constructor.

@@ -18,7 +18,7 @@ abstract class KernelTestBase extends BaseTestsKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'user',
     'node',
@@ -30,8 +30,10 @@ abstract class KernelTestBase extends BaseTestsKernelTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('user');
@@ -48,7 +50,7 @@ abstract class KernelTestBase extends BaseTestsKernelTestBase {
     $node_type = NodeType::create([
       'type' => 'article',
       'name' => 'Article',
-      'description' => "Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.",
+      'description' => 'Use <em>articles</em> for time-sensitive content like news, press releases or blog posts.',
     ]);
     $node_type->save();
     $node_type = NodeType::create([
@@ -84,8 +86,10 @@ abstract class KernelTestBase extends BaseTestsKernelTestBase {
    *
    * @return array
    *   An array of article nodes.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createArticles() {
+  protected function createArticles(): array {
     $node = Node::create([
       'type' => 'article',
       'title' => $this->randomMachineName(),

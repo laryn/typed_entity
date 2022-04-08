@@ -25,21 +25,21 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    *
    * @var \Drupal\Core\Entity\EntityInterface
    */
-  protected $entity;
+  protected EntityInterface $entity;
 
   /**
    * The view builder.
    *
-   * @var \Drupal\Core\Entity\EntityViewBuilderInterface
+   * @var \Drupal\Core\Entity\EntityViewBuilderInterface|null
    */
-  protected $viewBuilder;
+  protected ?EntityViewBuilderInterface $viewBuilder;
 
   /**
    * The repository manager.
    *
-   * @var \Drupal\typed_entity\RepositoryManager
+   * @var \Drupal\typed_entity\RepositoryManager|null
    */
-  protected $repositoryManager;
+  protected ?RepositoryManager $repositoryManager;
 
   /**
    * WrappedEntityBase constructor.
@@ -62,7 +62,6 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    * {@inheritdoc}
    */
   public function getEntity(): EntityInterface {
-    assert($this->entity instanceof EntityInterface);
     return $this->entity;
   }
 
@@ -130,7 +129,7 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    *   The repository manager.
    */
   protected function repositoryManager(): RepositoryManager {
-    if (!$this->repositoryManager) {
+    if (!isset($this->repositoryManager)) {
       $this->repositoryManager = typed_entity_repository_manager();
     }
     return $this->repositoryManager;

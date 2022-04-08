@@ -24,7 +24,7 @@ interface TypedEntityRendererInterface extends VariantInterface, ContainerInject
    *     - 'view_mode': The view mode to use to render the entity. Leave it
    *       empty to use a static value declared in the renderer.
    *
-   * @return mixed[]
+   * @return array
    *   A render array.
    */
   public function build(WrappedEntityInterface $wrapped_entity, TypedEntityContext $context): array;

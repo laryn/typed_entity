@@ -1,8 +1,9 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace Drupal\typed_entity;
 
 use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
@@ -19,21 +20,21 @@ class RepositoryManager implements EntityWrapperInterface {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $entityTypeManager;
+  private EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * The plugin manager.
    *
    * @var \Drupal\typed_entity\TypedRepositoryPluginManager
    */
-  private $pluginManager;
+  private TypedRepositoryPluginManager $pluginManager;
 
   /**
    * Caches the deriver base IDs.
    *
    * @var string[]|null
    */
-  protected $deriverBaseIds;
+  protected ?array $deriverBaseIds;
 
   /**
    * RepositoryManager constructor.
@@ -118,13 +119,13 @@ class RepositoryManager implements EntityWrapperInterface {
     string $base_id,
     string $repository_id
   ): ?TypedRepositoryInterface {
-    if ($plugin) {
+    if ($plugin instanceof TypedRepositoryInterface) {
       return $plugin;
     }
     $plugin_id = sprintf(
       '%s%s%s',
       $base_id,
-      TypedRepositoryBase::DERIVATIVE_SEPARATOR,
+      PluginBase::DERIVATIVE_SEPARATOR,
       $repository_id
     );
     try {
@@ -148,11 +149,11 @@ class RepositoryManager implements EntityWrapperInterface {
     }
     $definitions = $this->pluginManager->getDefinitions();
     $ids = array_keys($definitions);
-    $deriver_plugin_ids = array_filter($ids, function (string $id) {
-      return strpos($id, TypedRepositoryBase::DERIVATIVE_SEPARATOR) !== FALSE;
+    $deriver_plugin_ids = array_filter($ids, static function (string $id) {
+      return strpos($id, PluginBase::DERIVATIVE_SEPARATOR) !== FALSE;
     });
-    $deriver_base_ids = array_map(function (string $id) {
-      [$base] = explode(TypedRepositoryBase::DERIVATIVE_SEPARATOR, $id, 2);
+    $deriver_base_ids = array_map(static function (string $id) {
+      [$base] = explode(PluginBase::DERIVATIVE_SEPARATOR, $id, 2);
       return $base;
     }, $deriver_plugin_ids);
     $this->deriverBaseIds = array_unique($deriver_base_ids);

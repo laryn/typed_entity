@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\typed_entity_example\Unit\WrappedEntities;
 
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\typed_entity_example\WrappedEntities\User;
 
@@ -21,8 +21,9 @@ class UserTest extends UnitTestCase {
    * @covers ::nickname
    */
   public function testNickname() {
-    $user_entity = $this->prophesize(EntityInterface::class);
-    $user_entity->mail = (object) ['value' => 'foo@lorem.ipsum'];
+    $user_entity = $this->prophesize(FieldableEntityInterface::class);
+    $user_entity->get('mail')
+      ->willReturn((object) ['value' => 'foo@lorem.ipsum']);
     $sut = new User($user_entity->reveal());
     $this->assertSame('foo', $sut->nickname());
   }

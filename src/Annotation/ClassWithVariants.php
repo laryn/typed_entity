@@ -17,19 +17,19 @@ class ClassWithVariants extends AnnotationBase implements ClassWithVariantsInter
    *
    * @var string
    */
-  public $fallback;
+  public string $fallback = '';
 
   /**
    * The variants.
    *
    * @var string[]
    */
-  public $variants = [];
+  public array $variants = [];
 
   /**
    * {@inheritdoc}
    */
-  public function get() {
+  public function get(): ClassWithVariants {
     return $this;
   }
 
@@ -60,15 +60,15 @@ class ClassWithVariants extends AnnotationBase implements ClassWithVariantsInter
     // extending the (optional) base class.
     return array_filter(
       $this->variants,
-      function (string $variant_class) use ($base_class): bool {
+      static function (string $variant_class) use ($base_class): bool {
         if (!class_exists($variant_class)) {
           return FALSE;
         }
         $interfaces = class_implements($variant_class) ?: [];
-        if (!in_array(VariantInterface::class, $interfaces)) {
+        if (!in_array(VariantInterface::class, $interfaces, TRUE)) {
           return FALSE;
         }
-        return empty($base_class) ? TRUE : is_a($variant_class, $base_class, TRUE);
+        return empty($base_class) || is_a($variant_class, $base_class, TRUE);
       }
     );
   }
@@ -82,18 +82,18 @@ class ClassWithVariants extends AnnotationBase implements ClassWithVariantsInter
     if (!empty($base_class) && class_exists($base_class)) {
       $variants = array_filter(
         $variants,
-        function (string $variant) use ($base_class): bool {
+        static function (string $variant) use ($base_class): bool {
           return is_a($variant, $base_class, TRUE);
         }
       );
     }
     $variant = array_reduce(
       $variants,
-      function (string $result, string $variant) use ($context) {
+      static function (string $result, string $variant) use ($context) {
         if (!empty($result)) {
           return $result;
         }
-        return call_user_func_array([$variant, 'applies'], [$context]) ? $variant : '';
+        return call_user_func([$variant, 'applies'], $context) ? $variant : '';
       },
       ''
     );

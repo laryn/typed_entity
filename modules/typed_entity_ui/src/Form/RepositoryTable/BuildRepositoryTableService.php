@@ -2,6 +2,7 @@
 
 namespace Drupal\typed_entity_ui\Form\RepositoryTable;
 
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
@@ -79,6 +80,7 @@ class BuildRepositoryTableService {
    *   The render array.
    */
   protected function buildRow(TypedRepositoryInterface $repository): array {
+    \assert($repository instanceof PluginInspectionInterface);
     $entity_type = $repository->getEntityType();
     $bundle = $repository->getBundle();
     $plugin_id = $repository->id();
@@ -103,7 +105,7 @@ class BuildRepositoryTableService {
       'class' => [
         'data' => [
           '#theme' => 'php_class_summary',
-          '#class_name' => get_class($repository),
+          '#class_name' => \get_class($repository),
           '#with_comment' => FALSE,
           '#with_fqn' => FALSE,
         ],

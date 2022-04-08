@@ -3,7 +3,6 @@
 namespace Drupal\typed_entity\TypedRepositories;
 
 use Drupal\Component\Plugin\Exception\PluginException;
-use Drupal\Core\Access\AccessibleInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
@@ -34,7 +33,7 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    *
    * @var \Symfony\Component\DependencyInjection\ContainerInterface
    */
-  protected $container;
+  protected ContainerInterface $container;
 
   /**
    * The entity type for this repository.
@@ -55,14 +54,14 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    *
    * @var \Drupal\typed_entity\Annotation\ClassWithVariantsInterface
    */
-  protected $renderers = NULL;
+  protected $renderers;
 
   /**
    * The wrappers for this repository.
    *
    * @var \Drupal\typed_entity\Annotation\ClassWithVariantsInterface
    */
-  protected $wrappers = NULL;
+  protected $wrappers;
 
   /**
    * TypedEntityRepositoryBase constructor.
@@ -77,6 +76,7 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    *   The service container.
    *
    * @throws \UnexpectedValueException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(array $configuration, string $plugin_id, array $plugin_definition, ContainerInterface $container) {
     $this->container = $container;
@@ -92,6 +92,8 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static($configuration, $plugin_id, $plugin_definition, $container);
@@ -150,7 +152,8 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
     $bundle_key = $this->entityType->getKey('bundle');
     $query = $this->entityTypeManager
       ->getStorage($this->entityType->id())
-      ->getQuery();
+      ->getQuery()
+      ->accessCheck(TRUE);
     if (!$this->bundle || !$bundle_key) {
       return $query;
     }
@@ -169,10 +172,10 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
     if (!$wrappers) {
       return NULL;
     }
-    assert($wrappers instanceof ClassWithVariantsInterface);
+    \assert($wrappers instanceof ClassWithVariantsInterface);
     $class = $wrappers->negotiateVariant($context, WrappedEntityBase::class);
     return $class
-      ? call_user_func_array([$class, 'create'], [$this->container, $entity])
+      ? call_user_func([$class, 'create'], $this->container, $entity)
       : NULL;
   }
 
@@ -184,9 +187,9 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
     if (!$renderers) {
       return NULL;
     }
-    assert($renderers instanceof ClassWithVariantsInterface);
+    \assert($renderers instanceof ClassWithVariantsInterface);
     $class = $renderers->negotiateVariant($context, TypedEntityRendererBase::class) ?? TypedEntityRendererBase::class;
-    return call_user_func_array([$class, 'create'], [$this->container]);
+    return call_user_func([$class, 'create'], $this->container);
   }
 
   /**
@@ -218,11 +221,9 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
       throw new \UnexpectedValueException($message);
     }
     $wrappers = $plugin_definition['wrappers'] ?? NULL;
-    if ($wrappers instanceof ClassWithVariantsInterface) {
-      // Ensure the wrapper class exists.
-      if (!$wrappers->getFallback(WrappedEntityBase::class)) {
-        throw new \UnexpectedValueException('The wrapper fallback does not exist.');
-      }
+    // Ensure the wrapper class exists.
+    if (($wrappers instanceof ClassWithVariantsInterface) && !$wrappers->getFallback(WrappedEntityBase::class)) {
+      throw new \UnexpectedValueException('The wrapper fallback does not exist.');
     }
   }
 
@@ -265,16 +266,12 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function wrapAll($operation = 'view'): array {
+  public function wrapAll(string $operation = 'view'): array {
     $bundle_key = $this->entityType->getKey('bundle');
     $entities = $this->entityTypeManager
       ->getStorage($this->entityType->id())
       ->loadByProperties([$bundle_key => $this->bundle]);
-    $check_access = static function (EntityInterface $entity) use ($operation) {
-      return $entity instanceof AccessibleInterface
-        ? $entity->access($operation)
-        : TRUE;
-    };
+    $check_access = static fn(EntityInterface $entity) => $entity->access($operation);
     $accessible_entities = array_filter($entities, $check_access);
     return $this->wrapMultiple($accessible_entities);
   }
@@ -295,12 +292,15 @@ class TypedRepositoryBase extends PluginBase implements TypedRepositoryInterface
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function createEntity(array $values = []): WrappedEntityInterface {
     // Autoset the bundle key, if the typed repository has a bundle and the
     // entity type supports bundles.
     $bundle_key = $this->entityType->getKey('bundle');
-    if ($this->bundle && $bundle_key && empty($values[$bundle_key])) {
+    if ($this->bundle && \is_string($bundle_key) && empty($values[$bundle_key])) {
       $values[$bundle_key] = $this->bundle;
     }
 

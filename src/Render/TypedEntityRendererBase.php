@@ -33,7 +33,7 @@ class TypedEntityRendererBase implements TypedEntityRendererInterface {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  private $entityTypeManager;
+  private EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * TypedEntityRendererBase constructor.

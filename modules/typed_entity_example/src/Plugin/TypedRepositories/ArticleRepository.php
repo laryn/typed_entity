@@ -8,6 +8,8 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\Query\ConditionInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
+use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
+use Drupal\typed_entity_example\WrappedEntities\Article;
 
 /**
  * The repository for articles.
@@ -51,7 +53,10 @@ final class ArticleRepository extends TypedRepositoryBase implements AccessibleI
    */
   public function findByTags(array $tags): array {
     $items = $this->findItemsByTags($tags);
-    return $this->wrapMultipleById($items);
+    return array_filter(
+      $this->wrapMultipleById($items),
+      static fn(WrappedEntityInterface $wrapped) => $wrapped instanceof Article
+    );
   }
 
   /**
@@ -84,14 +89,14 @@ final class ArticleRepository extends TypedRepositoryBase implements AccessibleI
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  private function findItemsByTags(array $tags) {
+  private function findItemsByTags(array $tags): array {
     $query = $this->getQuery();
     // Find all the articles that have at least one of the tags with insensitive
     // case match.
-    $field_path = static::FIELD_TAGS_NAME . '.entity.name';
+    $field_path = self::FIELD_TAGS_NAME . '.entity.name';
     $orGroup = array_reduce(
       $tags,
-      function (ConditionInterface $orCondition, string $tag) use ($field_path) {
+      static function (ConditionInterface $orCondition, string $tag) use ($field_path) {
         return $orCondition->condition($field_path, $tag, 'LIKE');
       },
       $query->orConditionGroup()

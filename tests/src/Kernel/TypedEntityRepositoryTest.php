@@ -22,8 +22,10 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    * Test the wrap method.
    *
    * @covers ::wrap
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testWrap() {
+  public function testWrap(): void {
     $article = DrupalNode::create([
       'type' => 'article',
       'title' => $this->randomMachineName(),
@@ -71,8 +73,10 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    * Test the wrapMultiple method.
    *
    * @covers ::wrapMultiple
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function testWrapMultiple() {
+  public function testWrapMultiple(): void {
     $repository = typed_entity_repository_manager()->get('node.article');
 
     $article_wrappers = $repository->wrapMultiple($this->createArticles());
@@ -86,7 +90,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    *
    * @covers ::id
    */
-  public function testId() {
+  public function testId(): void {
     $repository = typed_entity_repository_manager()->get('node.article');
     static::assertSame('node.article', $repository->id());
   }
@@ -95,8 +99,11 @@ class TypedEntityRepositoryTest extends KernelTestBase {
    * Test the getQuery() method.
    *
    * @covers ::getQuery
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  public function testGetQuery() {
+  public function testGetQuery(): void {
     $repository = typed_entity_repository_manager()->get('node.article');
     $query = $repository->getQuery();
 

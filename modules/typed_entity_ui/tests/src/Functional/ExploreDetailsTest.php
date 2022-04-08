@@ -18,11 +18,6 @@ class ExploreDetailsTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $profile = 'testing';
-
-  /**
-   * {@inheritdoc}
-   */
   protected $defaultTheme = 'classy';
 
   /**
@@ -37,7 +32,7 @@ class ExploreDetailsTest extends BrowserTestBase {
    *
    * @var array
    */
-  protected $adminPermissions = [
+  static protected array $adminPermissions = [
     'access administration pages',
     'administer content types',
     'administer nodes',
@@ -56,10 +51,12 @@ class ExploreDetailsTest extends BrowserTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
-    $this->adminUser = $this->drupalCreateUser($this->adminPermissions);
+    $this->adminUser = $this->drupalCreateUser(static::$adminPermissions);
     NodeType::create([
       'type' => 'article',
       'name' => 'Article',
@@ -68,8 +65,11 @@ class ExploreDetailsTest extends BrowserTestBase {
 
   /**
    * Test the detail page for the Article.
+   *
+   * @throws \Behat\Mink\Exception\ResponseTextException
+   * @throws \Behat\Mink\Exception\ExpectationException
    */
-  public function testDetailPageForArticle() {
+  public function testDetailPageForArticle(): void {
     $page = $this->getSession()->getPage();
     $assert_session = $this->assertSession();
     if ($this->drupalUserIsLoggedIn($this->adminUser)) {

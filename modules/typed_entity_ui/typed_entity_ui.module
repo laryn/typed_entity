@@ -10,7 +10,7 @@ use Drupal\typed_entity\Annotation\ClassWithVariantsInterface;
 /**
  * Implements hook_theme().
  */
-function typed_entity_ui_theme($existing, $type, $theme, $path): array {
+function typed_entity_ui_theme(array $existing, string $type, string $theme, string $path): array {
   return [
     'php_class_info' => [
       'variables' => [
@@ -62,7 +62,7 @@ function template_preprocess_php_class_info(array &$variables) {
   $variables['interfaces'] = [
     '#title' => t('Interfaces'),
     '#theme' => 'item_list',
-    '#items' => array_map(function (string $interface) {
+    '#items' => array_map(static function (string $interface) {
       return [
         '#type' => 'html_tag',
         '#tag' => 'code',
@@ -92,7 +92,7 @@ function template_preprocess_class_with_variants(array &$variables) {
     $fallback = $object->getFallback($base_class);
     $variants = $object->getVariants($base_class);
   }
-  $build_array = function (string $class_name) {
+  $build_array = static function (string $class_name) {
     return ['#theme' => 'php_class_summary', '#class_name' => $class_name];
   };
   $variables['fallback'] = t('- None available -');
@@ -116,7 +116,7 @@ function template_preprocess_class_with_variants(array &$variables) {
  * @param array $variables
  *   An associative array containing the variables.
  */
-function template_preprocess_php_class_summary(&$variables) {
+function template_preprocess_php_class_summary(array &$variables) {
   $class_name = $variables['class_name'] ?? '';
   try {
     $reflection = new \ReflectionClass($class_name);

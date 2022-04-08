@@ -23,8 +23,9 @@ class RepositoryManagerTest extends UnitTestCase {
   /**
    * @covers ::get
    * @dataProvider getDataProvider
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function testGet($entity_type_id, $bundle, $times) {
+  public function testGet($entity_type_id, $bundle, $times): void {
     $plugin_manager = $this->prophesize(TypedRepositoryPluginManager::class);
     $plugin_ids = [
       'foo.bar',
@@ -39,7 +40,7 @@ class RepositoryManagerTest extends UnitTestCase {
       ->shouldBeCalledTimes($times)
       ->will(function ($args) use ($plugin_ids, $a_plugin) {
         [$id] = $args;
-        if (in_array($id, $plugin_ids)) {
+        if (in_array($id, $plugin_ids, TRUE)) {
           return $a_plugin;
         }
         throw new PluginNotFoundException('typed_entity_repository');
@@ -55,8 +56,10 @@ class RepositoryManagerTest extends UnitTestCase {
 
   /**
    * @covers ::get
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function testGetNull() {
+  public function testGetNull(): void {
     $plugin_manager = $this->prophesize(TypedRepositoryPluginManager::class);
     $plugin_manager->getDefinitions()->willReturn(['lol:iirc.wrt' => '']);
     $plugin_manager->createInstance(Argument::type('string'), Argument::type('array'))

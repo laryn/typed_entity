@@ -9,7 +9,7 @@ td.plugin-id span {
   position: relative;
   float: right;
   background-color: white;
-  border: 1px solid #DDD;
+  border: 1px solid #ddd;
   padding: 0;
   margin-top: -0.5rem;
   margin-right: -0.5rem;
@@ -17,7 +17,9 @@ td.plugin-id span {
   text-align: center;
   box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.3);
 }
-#video-thumbnail a { display: block }
+#video-thumbnail a {
+  display: block;
+}
 #video-thumbnail .fake-button {
   font-weight: bold;
   padding: 1rem;

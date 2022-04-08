@@ -2,6 +2,7 @@
 
 namespace Drupal\typed_entity_example\WrappedEntities;
 
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityBase;
 
 /**
@@ -18,7 +19,11 @@ final class User extends WrappedEntityBase {
   public function nickname(): string {
     // According to our stakeholders the nickname is the part before the @ in
     // the registration email.
-    $email = $this->getEntity()->mail->value;
+    $entity = $this->getEntity();
+    if (!$entity instanceof FieldableEntityInterface) {
+      return '';
+    }
+    $email = $entity->get('mail')->value;
     $parts = explode('@', $email);
     return reset($parts);
   }

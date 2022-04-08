@@ -14,7 +14,7 @@ class NewsArticle extends Article {
   /**
    * Get the byline for the article.
    */
-  public function getByline() {
+  public function getByline(): string {
     return 'By John Doe';
   }
 

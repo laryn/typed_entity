@@ -14,7 +14,7 @@ class RepositoryTableRequest {
    *
    * @var \Drupal\typed_entity\RepositoryManager
    */
-  protected $repositoryManager;
+  protected RepositoryManager $repositoryManager;
 
   /**
    * RepositoryTableRequest constructor.
