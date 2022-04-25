@@ -144,7 +144,7 @@ abstract class WrappedEntityBase implements WrappedEntityInterface {
    * @SuppressWarnings(PHPMD.StaticAccess)
    */
   protected function viewBuilder(): EntityViewBuilderInterface {
-    if (!$this->viewBuilder) {
+    if (!isset($this->viewBuilder)) {
       $entity = $this->getEntity()->getEntityTypeId();
       $entity_type_manager = \Drupal::entityTypeManager();
       $this->viewBuilder = $entity_type_manager->getViewBuilder($entity);

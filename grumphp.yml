@@ -8,9 +8,6 @@ grumphp:
     composer: ~
     composer_normalize: ~
     jsonlint: ~
-    git_commit_message:
-      enforce_capitalized_subject: false
-      max_subject_width: 50
     phpcs:
       standard:
         - vendor/drupal/coder/coder_sniffer/Drupal
