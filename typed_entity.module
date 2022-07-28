@@ -54,6 +54,17 @@ function typed_entity_entity_display_build_alter(&$build, $context) {
 }
 
 /**
+ * Implements hook_entity_build_defaults_alter().
+ */
+function typed_entity_entity_build_defaults_alter(array &$build, EntityInterface $entity, $view_mode) {
+  [$renderer, $wrapped_entity] = _typed_entity_find_renderer($entity, $build);
+  if (!$renderer instanceof TypedEntityRendererInterface || !$wrapped_entity instanceof WrappedEntityInterface) {
+    return;
+  }
+  $renderer->buildDefaultsAlter($build, $wrapped_entity, $view_mode);
+}
+
+/**
  * A type hinted helper for .module files to get the repository manager.
  *
  * @return \Drupal\typed_entity\RepositoryManager

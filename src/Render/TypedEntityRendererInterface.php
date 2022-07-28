@@ -63,6 +63,22 @@ interface TypedEntityRendererInterface extends VariantInterface, ContainerInject
   public function displayBuildAlter(array &$build, WrappedEntityInterface $wrapped_entity, array $context): void;
 
   /**
+   * Alter entity renderable values before cache checking during rendering.
+   *
+   * The values in the #cache key of the renderable array are used to determine if
+   * a cache entry exists for the entity's rendered output. Ideally only values
+   * that pertain to caching should be altered in this hook.
+   *
+   * @param array &$build
+   *   A renderable array containing the entity's caching and view mode values.
+   * @param WrappedEntityInterface $wrapped_entity
+   *   The wrapped entity that is being viewed.
+   * @param string $view_mode
+   *   The view_mode that is to be used to display the entity.
+   */
+  public function buildDefaultsAlter(array &$build, WrappedEntityInterface $wrapped_entity, string $view_mode): void;
+
+  /**
    * Custom preprocessing for the renderer.
    *
    * @param array $variables

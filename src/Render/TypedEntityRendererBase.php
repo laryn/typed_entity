@@ -87,6 +87,13 @@ class TypedEntityRendererBase implements TypedEntityRendererInterface {
   /**
    * {@inheritdoc}
    *
+   * By default do nothing.
+   */
+  public function buildDefaultsAlter(array &$build, WrappedEntityInterface $wrapped_entity, string $view_mode): void {}
+
+  /**
+   * {@inheritdoc}
+   *
    * By default match based on the declared view mode.
    */
   public static function applies(TypedEntityContext $context): bool {
