@@ -1,6 +1,6 @@
 name: Typed Entity UI
 description: Adds a helper UI to the Typed Entity module to understand class hierarchy.
 type: module
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8 || ^9 || ^10
 dependencies:
   - typed_entity:typed_entity

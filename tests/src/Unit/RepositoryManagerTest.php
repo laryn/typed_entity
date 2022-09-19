@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\typed_entity\Unit;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Tests\UnitTestCase;
@@ -20,6 +21,7 @@ use Prophecy\Argument;
  */
 class RepositoryManagerTest extends UnitTestCase {
 
+  use ProphecyTrait;
   /**
    * @covers ::get
    * @dataProvider getDataProvider

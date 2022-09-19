@@ -1,11 +1,11 @@
-td.plugin-id span {
+.plugin-id span {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 2px 6px;
   border-radius: 3px;
   font-weight: bold;
 }
 
-#video-thumbnail {
+.video-thumbnail {
   position: relative;
   float: right;
   background-color: white;
@@ -17,10 +17,10 @@ td.plugin-id span {
   text-align: center;
   box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.3);
 }
-#video-thumbnail a {
+.video-thumbnail a {
   display: block;
 }
-#video-thumbnail .fake-button {
+.video-thumbnail .fake-button {
   font-weight: bold;
   padding: 1rem;
 }

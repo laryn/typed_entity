@@ -148,9 +148,7 @@ class ExploreForm extends FormBase {
         $bundles = [];
         $bundle_info = $this->bundleInfo->getBundleInfo($entity_type_id);
         foreach ($bundle_info as $bundle_id => $info) {
-          $bundles[$bundle_id] = $info['translatable']
-            ? $this->t($info['label'])
-            : $info['label'];
+          $bundles[$bundle_id] = $info['label'];
         }
         $form['bundle_wrapper']['bundle'] = [
           '#type' => 'select',
@@ -236,7 +234,10 @@ class ExploreForm extends FormBase {
     $resolver = \Drupal::service('extension.path.resolver');
     return [
       '#type' => 'container',
-      '#attributes' => ['id' => 'video-thumbnail'],
+      '#attributes' => [
+        'id' => 'video-thumbnail',
+        'class' => ['video-thumbnail'],
+      ],
       [
         '#type' => 'link',
         '#url' => Url::fromUri('https://video.mateuaguilo.com/w/exgsNqCSQZ6antJXjDGXc9'),

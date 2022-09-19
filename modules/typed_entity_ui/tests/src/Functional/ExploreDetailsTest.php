@@ -42,7 +42,7 @@ class ExploreDetailsTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'node',
     'typed_entity',
     'typed_entity_ui',

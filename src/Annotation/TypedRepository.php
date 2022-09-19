@@ -2,6 +2,7 @@
 
 namespace Drupal\typed_entity\Annotation;
 
+use Drupal\Core\Annotation\Translation;
 use Drupal\Component\Annotation\Plugin;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryBase;
 
@@ -33,7 +34,7 @@ class TypedRepository extends Plugin {
    *
    * @ingroup plugin_translatable
    */
-  public \Drupal\Core\Annotation\Translation $description;
+  public Translation $description;
 
   /**
    * The available wrappers.

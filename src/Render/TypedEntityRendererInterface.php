@@ -65,13 +65,13 @@ interface TypedEntityRendererInterface extends VariantInterface, ContainerInject
   /**
    * Alter entity renderable values before cache checking during rendering.
    *
-   * The values in the #cache key of the renderable array are used to determine if
+   * The values in the #cache key of renderable arrays are used to determine if
    * a cache entry exists for the entity's rendered output. Ideally only values
    * that pertain to caching should be altered in this hook.
    *
    * @param array &$build
    *   A renderable array containing the entity's caching and view mode values.
-   * @param WrappedEntityInterface $wrapped_entity
+   * @param \Drupal\typed_entity\WrappedEntities\WrappedEntityInterface $wrapped_entity
    *   The wrapped entity that is being viewed.
    * @param string $view_mode
    *   The view_mode that is to be used to display the entity.

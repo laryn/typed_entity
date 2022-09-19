@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\typed_entity_example\Unit\Render\Article;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\typed_entity\WrappedEntities\WrappedEntityInterface;
@@ -16,6 +17,7 @@ use Drupal\typed_entity_example\Render\Article\Full;
  */
 class FullTest extends UnitTestCase {
 
+  use ProphecyTrait;
   /**
    * Tests the preprocessing for articles with the full view mode.
    *

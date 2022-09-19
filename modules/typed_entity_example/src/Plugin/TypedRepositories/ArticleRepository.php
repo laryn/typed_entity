@@ -67,7 +67,7 @@ final class ArticleRepository extends TypedRepositoryBase implements AccessibleI
    */
   private function countPublishedEntities(): int {
     try {
-      $query = $this->getQuery();
+      $query = $this->accessCheck(TRUE)->getQuery();
     }
     catch (PluginException $e) {
       return 0;

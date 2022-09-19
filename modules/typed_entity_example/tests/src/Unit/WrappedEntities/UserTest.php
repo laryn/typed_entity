@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\typed_entity_example\Unit\WrappedEntities;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\typed_entity_example\WrappedEntities\User;
@@ -15,6 +16,7 @@ use Drupal\typed_entity_example\WrappedEntities\User;
  */
 class UserTest extends UnitTestCase {
 
+  use ProphecyTrait;
   /**
    * Tests the nickname.
    *

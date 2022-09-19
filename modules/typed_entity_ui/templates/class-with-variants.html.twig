@@ -1,8 +1,8 @@
 {{ attach_library('typed_entity_ui/class_with_variants') }}
 <div{{ attributes }}>
   {% if variants is not empty %}
-    <h5>{{ 'Variants'|t }}: </h5>{{ variants }}
-    <h5>{{ 'Fallback'|t }}: </h5>
+    <h5 class="variants">{{ 'Variants'|t }}: </h5>{{ variants }}
+    <h5 class="fallback">{{ 'Fallback'|t }}: </h5>
   {% endif %}
   {{ fallback }}
 </div>

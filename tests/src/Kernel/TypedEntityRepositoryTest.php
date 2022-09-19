@@ -115,7 +115,7 @@ class TypedEntityRepositoryTest extends KernelTestBase {
     $page->save();
 
     static::assertSame('node', $query->getEntityTypeId());
-    static::assertEquals(3, $query->count()->execute());
+    static::assertEquals(3, $query->accessCheck(TRUE)->count()->execute());
   }
 
 }

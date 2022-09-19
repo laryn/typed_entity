@@ -3,6 +3,7 @@
 namespace Drupal\typed_entity_ui\Form\RepositoryTable;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\Core\Render\BubbleableMetadata;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\typed_entity\TypedRepositories\TypedRepositoryInterface;
@@ -33,10 +34,6 @@ class BuildRepositoryTableService {
         'There are no typed repositories yet. Check the <a href="@link">documentation</a> to learn how to create one.',
         ['@link' => 'https://www.drupal.org/project/typed_entity']
       ),
-//      '#cache' => [
-//        'contexts' => $this->entityType->getListCacheContexts(),
-//        'tags' => $this->entityType->getListCacheTags(),
-//      ],
     ]);
   }
 
@@ -84,7 +81,7 @@ class BuildRepositoryTableService {
     $entity_type = $repository->getEntityType();
     $bundle = $repository->getBundle();
     $plugin_id = $repository->id();
-    return [
+    $build = [
       'plugin_id' => [
         'data' => [
           '#type' => 'html_tag',
@@ -124,6 +121,8 @@ class BuildRepositoryTableService {
         ],
       ],
     ];
+    BubbleableMetadata::createFromObject($entity_type)->applyTo($build);
+    return $build;
   }
 
 }

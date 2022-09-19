@@ -18,6 +18,6 @@
   padding: 0.5em 0.75em;
 }
 
-.class-with-variants h5:first-child {
+.class-with-variants .variants {
   margin-top: 0;
 }
