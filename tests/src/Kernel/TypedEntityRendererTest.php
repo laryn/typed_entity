@@ -103,7 +103,7 @@ class TypedEntityRendererTest extends KernelTestBase {
    * @return array
    *   The data.
    */
-  public function rendererNegotiationViewModeDataProvider(): array {
+  public static function rendererNegotiationViewModeDataProvider(): array {
     return [
       ['foo', TypedEntityRendererBase::class],
       [Teaser::VIEW_MODE, Teaser::class],
@@ -129,7 +129,7 @@ class TypedEntityRendererTest extends KernelTestBase {
    * @return array
    *   The data.
    */
-  public function rendererNegotiationStateDataProvider(): array {
+  public static function rendererNegotiationStateDataProvider(): array {
     return [
       [FALSE, TypedEntityRendererBase::class],
       [TRUE, ConditionalRenderer::class],

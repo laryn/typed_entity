@@ -81,7 +81,7 @@ class RepositoryManagerTest extends UnitTestCase {
   /**
    * Data provider for testGet.
    */
-  public function getDataProvider(): array {
+  public static function getDataProvider(): array {
     return [
       ['foo', 'bar', 1],
       ['oof', 'faa', 3],
