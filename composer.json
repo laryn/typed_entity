@@ -11,7 +11,7 @@
     ],
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "dev-master",
-        "drupal/coder": "8.x-3.x-dev",
+        "drupal/coder": "^8",
         "enlightn/security-checker": "^1.7",
         "jakub-onderka/php-parallel-lint": "dev-master",
         "localheinz/composer-normalize": "^2.13",
